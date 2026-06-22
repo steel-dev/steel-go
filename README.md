@@ -23,7 +23,7 @@ import (
 
 func main() {
 	client := steel.NewClient(os.Getenv("STEEL_API_KEY"))
-	result, err := client.WellKnown.List(context.Background())
+	result, err := client.Sessions.Create(context.Background(), params)
 	if err != nil {
 		panic(err)
 	}
