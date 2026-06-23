@@ -2,6 +2,8 @@ package steel
 
 import (
 	"encoding/json"
+	"github.com/steel-dev/steel-go/internal/apijson"
+	"github.com/steel-dev/steel-go/internal/param"
 	"time"
 )
 
@@ -1629,1903 +1631,432 @@ const (
 	GetSessionsStatusFailed   GetSessionsStatus = "failed"
 )
 
-type CaptchaSolveResponse struct {
-	// Response message
-	Message *string `json:"message,omitempty"`
-	// Whether the action was successful
-	Success bool `json:"success"`
-}
-
-type SessionComputerResponse struct {
-	// Base64 encoded screenshot if requested
-	Base64Image *string `json:"base64_image,omitempty"`
-	// Error message if action failed
-	Error *string `json:"error,omitempty"`
-	// Output message from the action
-	Output *string `json:"output,omitempty"`
-	// System information
-	System *string `json:"system,omitempty"`
-}
-
-// SessionCreateParams Request body schema for creating a new browser session.
-type SessionCreateParams struct {
-	// Block ads in the browser session. Default is false.
-	BlockAds *bool `json:"blockAds,omitempty"`
-	// PEM-encoded root CA certificates to trust in this session. THIS IS CURRENTLY AN EXPERIMENTAL FEATURE.
-	CaCertificates *[]string `json:"caCertificates,omitempty"`
-	// Number of sessions to create concurrently (check your plan limit)
-	Concurrency *int64 `json:"concurrency,omitempty"`
-	// Configuration for session credentials
-	Credentials *SessionCreateParamsCredentials `json:"credentials,omitempty"`
-	// Configuration for the debug URL and session viewer. Controls interaction capabilities, cursor visibility, and other debug-related settings.
-	DebugConfig *SessionCreateParamsDebugConfig `json:"debugConfig,omitempty"`
-	// Device configuration for the session. Specify 'mobile' for mobile device fingerprints and configurations.
-	DeviceConfig *SessionCreateParamsDeviceConfig `json:"deviceConfig,omitempty"`
-	// Viewport and browser window dimensions for the session. Mobile sessions require dimensions of at least 508x1074; smaller mobile dimensions are rejected with a 400 response.
-	Dimensions *SessionCreateParamsDimensions `json:"dimensions,omitempty"`
-	// Enable experimental features for the session.
-	ExperimentalFeatures *[]string `json:"experimentalFeatures,omitempty"`
-	// Array of extension IDs to install in the session. Use ['all_ext'] to install all uploaded extensions.
-	ExtensionIDs *[]string `json:"extensionIds,omitempty"`
-	// Launch the browser in fullscreen mode, covering the full screen with no Chrome UI. Default is false.
-	Fullscreen *bool `json:"fullscreen,omitempty"`
-	// Enable headless browser mode (disable Headful mode)
-	Headless *bool `json:"headless,omitempty"`
-	// Inactivity timeout in milliseconds. When set, the session is released if no CDP command or remote input is received for this duration, even if `timeout` has not yet elapsed. Note that `timeout` remains the hard cap on session lifetime: if `inactivityTimeout` is greater than or equal to the effective `timeout`, it has no effect since `timeout` always elapses first. Omit to disable.
-	InactivityTimeout *int64 `json:"inactivityTimeout,omitempty"`
-	// Enable Selenium mode for the browser session (default is false). Use this when you plan to connect to the browser session via Selenium.
-	IsSelenium *bool `json:"isSelenium,omitempty"`
-	// The namespace the session should be created against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Enable bandwidth optimizations. Passing true enables all flags (except hosts/patterns). Object allows granular control.
-	OptimizeBandwidth *SessionCreateParamsOptimizeBandwidth `json:"optimizeBandwidth,omitempty"`
-	// This flag will persist the user profile for the session.
-	PersistProfile *bool `json:"persistProfile,omitempty"`
-	// This flag will set the profile for the session.
-	ProfileID *string `json:"profileId,omitempty"`
-	// The project to create the session in. When provided, the session namespace is resolved from the project.
-	ProjectID *string `json:"projectId,omitempty"`
-	// Custom proxy URL for the browser session. Overrides useProxy, disabling Steel-provided proxies in favor of your specified proxy. Format: http(s)://username:password@hostname:port
-	ProxyURL *string `json:"proxyUrl,omitempty"`
-	// The desired region for the session. Available: us-east, us-west, us-central, eu-west, eu-central, ap-northeast, ap-southeast, sa-east. Legacy codes (iad, lax, ord) are also accepted.
-	Region *interface{} `json:"region,omitempty"`
-	// Session context data to be used in the created session. Sessions will start with an empty context by default.
-	SessionContext *SessionCreateParamsSessionContext `json:"sessionContext,omitempty"`
-	// Optional custom UUID for the session
-	SessionID *string `json:"sessionId,omitempty"`
-	// Enable automatic captcha solving. Default is false.
-	SolveCaptcha *bool `json:"solveCaptcha,omitempty"`
-	// Stealth configuration for the session
-	StealthConfig *SessionCreateParamsStealthConfig `json:"stealthConfig,omitempty"`
-	// Session timeout duration in milliseconds. Default is 300000 (5 minutes).
-	Timeout  *int64                       `json:"timeout,omitempty"`
-	UseProxy *SessionCreateParamsUseProxy `json:"useProxy,omitempty"`
-	// Custom user agent string for the browser session
-	UserAgent *string `json:"userAgent,omitempty"`
-}
-
-type CredentialCreateParams struct {
-	// Label for the credential
-	Label *string `json:"label,omitempty"`
-	// The namespace the credential is stored against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Website origin the credential is for
-	Origin *string `json:"origin,omitempty"`
-	// Project to store the credential in.
-	ProjectID *string `json:"projectId,omitempty"`
-	// Value for the credential
-	Value map[string]string `json:"value"`
-}
-
-type CredentialListResponse struct {
-	Credentials []CredentialListResponseCredential `json:"credentials"`
-}
-
-type CredentialCreateResponse struct {
-	// Date and time the credential was created
-	CreatedAt time.Time `json:"createdAt"`
-	// Label for the credential
-	Label *string `json:"label,omitempty"`
-	// The namespace the credential is stored against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Website origin the credential is for
-	Origin *string `json:"origin,omitempty"`
-	// Date and time the credential was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-type CredentialDeleteParams struct {
-	// The namespace the credential is stored against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Website origin the credential is for
-	Origin string `json:"origin"`
-	// Project to delete the credential from.
-	ProjectID *string `json:"projectId,omitempty"`
-}
-
-type CredentialUpdateParams struct {
-	// Label for the credential
-	Label *string `json:"label,omitempty"`
-	// The namespace the credential is stored against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Website origin the credential is for
-	Origin *string `json:"origin,omitempty"`
-	// Project to update the credential in.
-	ProjectID *string `json:"projectId,omitempty"`
-	// Value for the credential
-	Value *map[string]string `json:"value,omitempty"`
-}
-
-type ExtensionDeleteAllResponse struct {
-	Message string `json:"message"`
-}
-
 // ErrorResponse An error response from the API
 type ErrorResponse struct {
-	Context    *[]ErrorResponseContext `json:"context,omitempty"`
-	Error      *string                 `json:"error,omitempty"`
-	LinkToDocs *string                 `json:"linkToDocs,omitempty"`
-	Message    string                  `json:"message"`
+	Context    []ErrorResponseContext `json:"context"`
+	Error      string                 `json:"error"`
+	LinkToDocs string                 `json:"linkToDocs"`
+	Message    string                 `json:"message" api:"required"`
+	JSON       errorResponseJSON      `json:"-"`
 }
 
-// ExtensionListResponse Response containing a list of extensions for the organization
-type ExtensionListResponse struct {
-	// Total number of extensions
-	Count float64 `json:"count"`
-	// List of extensions for the organization
-	Extensions []ExtensionListResponseExtension `json:"extensions"`
+// errorResponseJSON contains the JSON metadata for the struct [ErrorResponse]
+type errorResponseJSON struct {
+	Context     apijson.Field
+	Error       apijson.Field
+	LinkToDocs  apijson.Field
+	Message     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
 }
 
-type ExtensionUploadResponse struct {
-	// Creation timestamp
-	CreatedAt string `json:"createdAt"`
-	// Unique extension identifier (e.g., ext_12345)
-	ID string `json:"id"`
-	// Extension name
-	Name string `json:"name"`
-	// Last update timestamp
-	UpdatedAt string `json:"updatedAt"`
+func (r *ErrorResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r errorResponseJSON) RawJSON() string {
+	return r.raw
 }
 
 type File struct {
 	// Timestamp when the file was created
-	LastModified time.Time `json:"lastModified"`
+	LastModified time.Time `json:"lastModified" api:"required"`
 	// Path to the file in the storage system
-	Path string `json:"path"`
+	Path string `json:"path" api:"required"`
 	// Size of the file in bytes
-	Size float64 `json:"size"`
+	Size float64  `json:"size" api:"required"`
+	JSON fileJSON `json:"-"`
 }
 
-type FileUploadParams struct {
-	// The file to upload (binary) or URL string to download from
-	File FileUpload `json:"file"`
-	// Path to the file in the storage system
-	Path *string `json:"path,omitempty"`
+// fileJSON contains the JSON metadata for the struct [File]
+type fileJSON struct {
+	LastModified apijson.Field
+	Path         apijson.Field
+	Size         apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
 }
 
-type SessionAgentTracesResponse struct {
-	Events  []map[string]interface{} `json:"events"`
-	HasMore bool                     `json:"hasMore"`
-	Total   float64                  `json:"total"`
+func (r *File) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r fileJSON) RawJSON() string {
+	return r.raw
 }
 
 type Fileslist struct {
 	// Array of files for the current page
-	Data []FileslistData `json:"data"`
+	Data []FileslistData `json:"data" api:"required"`
+	JSON fileslistJSON   `json:"-"`
+}
+
+// fileslistJSON contains the JSON metadata for the struct [Fileslist]
+type fileslistJSON struct {
+	Data        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *Fileslist) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r fileslistJSON) RawJSON() string {
+	return r.raw
 }
 
 type ClientPdfParams struct {
 	// Delay before generating the PDF (in milliseconds)
-	Delay *float64 `json:"delay,omitempty"`
+	Delay param.Field[float64] `json:"delay"`
 	// Project to execute the PDF generation in.
-	ProjectID *string `json:"projectId,omitempty"`
+	ProjectID param.Field[string] `json:"projectId"`
 	// The desired region for the action to be performed in
-	Region *interface{} `json:"region,omitempty"`
+	Region param.Field[interface{}] `json:"region"`
 	// URL of the webpage to convert to PDF
-	URL string `json:"url"`
+	URL param.Field[string] `json:"url" api:"required"`
 	// Use a Steel-provided residential proxy for generating the PDF
-	UseProxy *bool `json:"useProxy,omitempty"`
+	UseProxy param.Field[bool] `json:"useProxy"`
+}
+
+func (r ClientPdfParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 type PdfResponse struct {
 	// URL where the PDF is hosted
-	URL string `json:"url"`
+	URL  string          `json:"url" api:"required"`
+	JSON pdfResponseJSON `json:"-"`
 }
 
-type ProfileCreateResponse struct {
-	// The date and time when the profile was created
-	CreatedAt time.Time `json:"createdAt"`
-	// The credentials configuration associated with the profile
-	CredentialsConfig interface{} `json:"credentialsConfig"`
-	// The dimensions associated with the profile
-	Dimensions *ProfileCreateResponseDimensions `json:"dimensions,omitempty"`
-	// The extension IDs associated with the profile
-	ExtensionIDs *[]string `json:"extensionIds,omitempty"`
-	// The fingerprint associated with the profile
-	Fingerprint *ProfileCreateResponseFingerprint `json:"fingerprint,omitempty"`
-	// The unique identifier for the profile
-	ID string `json:"id"`
-	// The project ID associated with the profile
-	ProjectID *string `json:"projectId,omitempty"`
-	// The last session ID associated with the profile
-	SourceSessionID *string `json:"sourceSessionId,omitempty"`
-	// The status of the profile
-	Status ProfileStatus `json:"status"`
-	// The date and time when the profile was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
-	// The proxy configuration associated with the profile
-	UseProxyConfig interface{} `json:"useProxyConfig"`
-	// The user agent associated with the profile
-	UserAgent *string `json:"userAgent,omitempty"`
+// pdfResponseJSON contains the JSON metadata for the struct [PdfResponse]
+type pdfResponseJSON struct {
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
 }
 
-type ProfileCreateParams struct {
-	// The dimensions associated with the profile
-	Dimensions *ProfileCreateParamsDimensions `json:"dimensions,omitempty"`
-	// Project to create the profile in
-	ProjectID *string `json:"projectId,omitempty"`
-	// The proxy associated with the profile
-	ProxyURL *string `json:"proxyUrl,omitempty"`
-	// The user agent associated with the profile
-	UserAgent *string `json:"userAgent,omitempty"`
-	// The user data directory associated with the profile
-	UserDataDir FileUpload `json:"userDataDir"`
+func (r *PdfResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-type ProfileListResponse struct {
-	// The total number of profiles
-	Count float64 `json:"count"`
-	// The list of profiles
-	Profiles []ProfileListResponseProfile `json:"profiles"`
-}
-
-// SessionReleaseResponse Response for releasing a single session.
-type SessionReleaseResponse struct {
-	// Details about the outcome of the release operation
-	Message string `json:"message"`
-	// Indicates if the session was successfully released
-	Success bool `json:"success"`
-}
-
-// SessionReleaseAllResponse Response for releasing multiple sessions.
-type SessionReleaseAllResponse struct {
-	// Details about the outcome of the release operation
-	Message string `json:"message"`
-	// Indicates if the sessions were successfully released
-	Success bool `json:"success"`
+func (r pdfResponseJSON) RawJSON() string {
+	return r.raw
 }
 
 type ClientScrapeParams struct {
 	// Delay before scraping (in milliseconds)
-	Delay *float64 `json:"delay,omitempty"`
+	Delay param.Field[float64] `json:"delay"`
 	// Desired format(s) for the scraped content. Default is `html`.
-	Format *[]ScrapeRequestFormatItem `json:"format,omitempty"`
+	Format param.Field[[]ScrapeRequestFormatItem] `json:"format"`
 	// Include a PDF in the response
-	Pdf *bool `json:"pdf,omitempty"`
+	Pdf param.Field[bool] `json:"pdf"`
 	// Project to execute the scrape in.
-	ProjectID *string `json:"projectId,omitempty"`
+	ProjectID param.Field[string] `json:"projectId"`
 	// The desired region for the action to be performed in
-	Region *interface{} `json:"region,omitempty"`
+	Region param.Field[interface{}] `json:"region"`
 	// Include a screenshot in the response
-	Screenshot *bool `json:"screenshot,omitempty"`
+	Screenshot param.Field[bool] `json:"screenshot"`
 	// URL of the webpage to scrape
-	URL string `json:"url"`
+	URL param.Field[string] `json:"url" api:"required"`
 	// Use a Steel-provided residential proxy for the scrape
-	UseProxy *bool `json:"useProxy,omitempty"`
+	UseProxy param.Field[bool] `json:"useProxy"`
+}
+
+func (r ClientScrapeParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 // ScrapeResponse Response from a successful scrape request
 type ScrapeResponse struct {
-	Content    ScrapeResponseContent     `json:"content"`
-	Links      []ScrapeResponseLink      `json:"links"`
-	Metadata   ScrapeResponseMetadata    `json:"metadata"`
-	Pdf        *ScrapeResponsePdf        `json:"pdf,omitempty"`
-	Screenshot *ScrapeResponseScreenshot `json:"screenshot,omitempty"`
+	Content    ScrapeResponseContent    `json:"content" api:"required"`
+	Links      []ScrapeResponseLink     `json:"links" api:"required"`
+	Metadata   ScrapeResponseMetadata   `json:"metadata" api:"required"`
+	Pdf        ScrapeResponsePdf        `json:"pdf"`
+	Screenshot ScrapeResponseScreenshot `json:"screenshot"`
+	JSON       scrapeResponseJSON       `json:"-"`
+}
+
+// scrapeResponseJSON contains the JSON metadata for the struct [ScrapeResponse]
+type scrapeResponseJSON struct {
+	Content     apijson.Field
+	Links       apijson.Field
+	Metadata    apijson.Field
+	Pdf         apijson.Field
+	Screenshot  apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScrapeResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scrapeResponseJSON) RawJSON() string {
+	return r.raw
 }
 
 type ClientScreenshotParams struct {
 	// Delay before capturing the screenshot (in milliseconds)
-	Delay *float64 `json:"delay,omitempty"`
+	Delay param.Field[float64] `json:"delay"`
 	// Capture the full page screenshot. Default is `false`.
-	FullPage *bool `json:"fullPage,omitempty"`
+	FullPage param.Field[bool] `json:"fullPage"`
 	// Project to execute the screenshot in.
-	ProjectID *string `json:"projectId,omitempty"`
+	ProjectID param.Field[string] `json:"projectId"`
 	// The desired region for the action to be performed in
-	Region *interface{} `json:"region,omitempty"`
+	Region param.Field[interface{}] `json:"region"`
 	// URL of the webpage to capture
-	URL string `json:"url"`
+	URL param.Field[string] `json:"url" api:"required"`
 	// Use a Steel-provided residential proxy for capturing the screenshot
-	UseProxy *bool `json:"useProxy,omitempty"`
+	UseProxy param.Field[bool] `json:"useProxy"`
+}
+
+func (r ClientScreenshotParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 type ScreenshotResponse struct {
 	// URL where the screenshot is hosted
-	URL string `json:"url"`
+	URL  string                 `json:"url" api:"required"`
+	JSON screenshotResponseJSON `json:"-"`
 }
 
-// SessionContext Session context data returned from a browser session.
-type SessionContext struct {
-	// Cookies to initialize in the session
-	Cookies *[]SessionContextCookie `json:"cookies,omitempty"`
-	// Domain-specific indexedDB items to initialize in the session
-	IndexedDB *map[string][]SessionContextIndexedDB `json:"indexedDB,omitempty"`
-	// Domain-specific localStorage items to initialize in the session
-	LocalStorage *map[string]map[string]string `json:"localStorage,omitempty"`
-	// Domain-specific sessionStorage items to initialize in the session
-	SessionStorage *map[string]map[string]string `json:"sessionStorage,omitempty"`
+// screenshotResponseJSON contains the JSON metadata for the struct [ScreenshotResponse]
+type screenshotResponseJSON struct {
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
 }
 
-// SessionCostResponse Session cost breakdown in US dollars
-type SessionCostResponse struct {
-	// Currency used for the cost values
-	Currency SessionCostResponseCurrency `json:"currency"`
-	// Session ID
-	ID string `json:"id"`
-	// Exact total session cost in US dollars (e.g. 0.031905), with no rounding to whole cents. Rounded only to micro-dollar precision (6 decimal places) for precise billing passthrough.
-	TotalCost float64 `json:"totalCost"`
-	// Cost unit. Values are expressed in US dollars.
-	Unit SessionCostResponseUnit `json:"unit"`
-	// Billable usage inputs used to calculate the costs
-	Usage SessionCostResponseUsage `json:"usage"`
+func (r *ScreenshotResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-type SessionLiveDetailsResponse struct {
-	Pages                      []SessionLiveDetailsResponsePage `json:"pages"`
-	SessionViewerFullscreenURL string                           `json:"sessionViewerFullscreenUrl"`
-	SessionViewerURL           string                           `json:"sessionViewerUrl"`
-	WsURL                      string                           `json:"wsUrl"`
-}
-
-// Session Represents the data structure for a browser session, including its configuration and status.
-type Session struct {
-	// Timestamp when the session started
-	CreatedAt time.Time `json:"createdAt"`
-	// Amount of credits consumed by the session
-	CreditsUsed int64 `json:"creditsUsed"`
-	// Configuration for the debug URL and session viewer. Controls interaction capabilities and cursor visibility.
-	DebugConfig *SessionDebugConfig `json:"debugConfig,omitempty"`
-	// URL for debugging the session
-	DebugURL string `json:"debugUrl"`
-	// Device configuration for the session
-	DeviceConfig *SessionDeviceConfig `json:"deviceConfig,omitempty"`
-	// Viewport and browser window dimensions for the session
-	Dimensions SessionDimensions `json:"dimensions"`
-	// Duration of the session in milliseconds
-	Duration int64 `json:"duration"`
-	// Number of events processed in the session
-	EventCount int64 `json:"eventCount"`
-	// Launch the browser in fullscreen mode, covering the full screen with no Chrome UI.
-	Fullscreen *bool `json:"fullscreen,omitempty"`
-	// Indicates if the session is headless or headful
-	Headless *bool `json:"headless,omitempty"`
-	// Unique identifier for the session
-	ID string `json:"id"`
-	// Inactivity timeout in milliseconds, if one was set when the session was created
-	InactivityTimeout *int64 `json:"inactivityTimeout,omitempty"`
-	// Indicates if Selenium is used in the session
-	IsSelenium *bool `json:"isSelenium,omitempty"`
-	// Bandwidth optimizations that were applied to the session.
-	OptimizeBandwidth SessionOptimizeBandwidth `json:"optimizeBandwidth"`
-	// This flag will persist the profile for the session.
-	PersistProfile *bool `json:"persistProfile,omitempty"`
-	// The ID of the profile associated with the session
-	ProfileID *string `json:"profileId,omitempty"`
-	// The project associated with the session
-	ProjectID *string `json:"projectId,omitempty"`
-	// Amount of data transmitted through the proxy
-	ProxyBytesUsed int64 `json:"proxyBytesUsed"`
-	// Source of the proxy used for the session
-	ProxySource *SessionResponseProxySource `json:"proxySource,omitempty"`
-	// The region where the session was created.
-	Region *SessionResponseRegion `json:"region,omitempty"`
-	// Why the session reached a terminal state. Null while the session is live, or when the reason is unknown (e.g. sessions created before this was tracked). One of: user_requested (released via the API/SDK), timeout (hard `timeout` elapsed), inactivity_timeout (no activity for the configured window), creation_timeout (never started in time), startup_failed (could not be dispatched), browser_closed (the browser or agent closed itself — not a crash), browser_crashed (the browser crashed or its machine became unresponsive).
-	ReleaseReason *SessionResponseReleaseReason `json:"releaseReason,omitempty"`
-	// URL to view session details
-	SessionViewerURL string `json:"sessionViewerUrl"`
-	// Indicates if captcha solving is enabled
-	SolveCaptcha *bool `json:"solveCaptcha,omitempty"`
-	// Status of the session
-	Status SessionResponseStatus `json:"status"`
-	// Stealth configuration for the session
-	StealthConfig *SessionStealthConfig `json:"stealthConfig,omitempty"`
-	// Session timeout duration in milliseconds
-	Timeout int64 `json:"timeout"`
-	// User agent string used in the session
-	UserAgent *string `json:"userAgent,omitempty"`
-	// URL for the session's WebSocket connection
-	WebsocketURL string `json:"websocketUrl"`
-}
-
-// Sessionslist Response containing a list of browser sessions with pagination details.
-type Sessionslist struct {
-	// Cursor for the next page of results. Null if no more pages.
-	NextCursor *string `json:"nextCursor,omitempty"`
-	// List of browser sessions
-	Sessions []SessionslistSession `json:"sessions"`
-	// Total number of sessions matching the query. Only included for filtered queries (e.g. status=live).
-	TotalCount *int64 `json:"totalCount,omitempty"`
-}
-
-// CaptchaSolveParams If no fields are provided, all detected captchas will be solved
-type CaptchaSolveParams struct {
-	// The page ID where the captcha is located
-	PageID *string `json:"pageId,omitempty"`
-	// The task ID of the specific captcha to solve
-	TaskID *string `json:"taskId,omitempty"`
-	// The URL where the captcha is located
-	URL *string `json:"url,omitempty"`
-}
-
-type CaptchaSolveImageParams struct {
-	// XPath to the captcha image element
-	ImageXPath string `json:"imageXPath"`
-	// XPath to the captcha input element
-	InputXPath string `json:"inputXPath"`
-	// URL where the captcha is located. Defaults to the current page URL
-	URL *string `json:"url,omitempty"`
-}
-
-type CredentialDeleteResponse struct {
-	Success bool `json:"success"`
-}
-
-type ExtensionUploadParams struct {
-	// Extension .zip/.crx file
-	File *FileUpload `json:"file,omitempty"`
-	// Extension URL
-	URL *string `json:"url,omitempty"`
-}
-
-type CredentialUpdateResponse struct {
-	// Date and time the credential was created
-	CreatedAt time.Time `json:"createdAt"`
-	// Label for the credential
-	Label *string `json:"label,omitempty"`
-	// The namespace the credential is stored against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Website origin the credential is for
-	Origin *string `json:"origin,omitempty"`
-	// Date and time the credential was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-type ExtensionUpdateParams struct {
-	// Extension .zip/.crx file
-	File *FileUpload `json:"file,omitempty"`
-	// Extension URL
-	URL *string `json:"url,omitempty"`
-}
-
-type ExtensionUpdateResponse struct {
-	// Creation timestamp
-	CreatedAt string `json:"createdAt"`
-	// Unique extension identifier (e.g., ext_12345)
-	ID string `json:"id"`
-	// Extension name
-	Name string `json:"name"`
-	// Last update timestamp
-	UpdatedAt string `json:"updatedAt"`
-}
-
-type ExtensionDeleteResponse struct {
-	Message string `json:"message"`
-}
-
-type ProfileGetResponse struct {
-	// The date and time when the profile was created
-	CreatedAt time.Time `json:"createdAt"`
-	// The credentials configuration associated with the profile
-	CredentialsConfig interface{} `json:"credentialsConfig"`
-	// The dimensions associated with the profile
-	Dimensions *ProfileGetResponseDimensions `json:"dimensions,omitempty"`
-	// The extension IDs associated with the profile
-	ExtensionIDs *[]string `json:"extensionIds,omitempty"`
-	// The fingerprint associated with the profile
-	Fingerprint *ProfileGetResponseFingerprint `json:"fingerprint,omitempty"`
-	// The unique identifier for the profile
-	ID string `json:"id"`
-	// The project ID associated with the profile
-	ProjectID *string `json:"projectId,omitempty"`
-	// The last session ID associated with the profile
-	SourceSessionID *string `json:"sourceSessionId,omitempty"`
-	// The status of the profile
-	Status ProfileStatus `json:"status"`
-	// The date and time when the profile was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
-	// The proxy configuration associated with the profile
-	UseProxyConfig interface{} `json:"useProxyConfig"`
-	// The user agent associated with the profile
-	UserAgent *string `json:"userAgent,omitempty"`
-}
-
-type ProfileUpdateParams struct {
-	// The dimensions associated with the profile
-	Dimensions *ProfileUpdateParamsDimensions `json:"dimensions,omitempty"`
-	// Project to create the profile in
-	ProjectID *string `json:"projectId,omitempty"`
-	// The proxy associated with the profile
-	ProxyURL *string `json:"proxyUrl,omitempty"`
-	// The user agent associated with the profile
-	UserAgent *string `json:"userAgent,omitempty"`
-	// The user data directory associated with the profile
-	UserDataDir FileUpload `json:"userDataDir"`
-}
-
-type ProfileUpdateResponse struct {
-	// The date and time when the profile was created
-	CreatedAt time.Time `json:"createdAt"`
-	// The credentials configuration associated with the profile
-	CredentialsConfig interface{} `json:"credentialsConfig"`
-	// The dimensions associated with the profile
-	Dimensions *ProfileUpdateResponseDimensions `json:"dimensions,omitempty"`
-	// The extension IDs associated with the profile
-	ExtensionIDs *[]string `json:"extensionIds,omitempty"`
-	// The fingerprint associated with the profile
-	Fingerprint *ProfileUpdateResponseFingerprint `json:"fingerprint,omitempty"`
-	// The unique identifier for the profile
-	ID string `json:"id"`
-	// The project ID associated with the profile
-	ProjectID *string `json:"projectId,omitempty"`
-	// The last session ID associated with the profile
-	SourceSessionID *string `json:"sourceSessionId,omitempty"`
-	// The status of the profile
-	Status ProfileStatus `json:"status"`
-	// The date and time when the profile was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
-	// The proxy configuration associated with the profile
-	UseProxyConfig interface{} `json:"useProxyConfig"`
-	// The user agent associated with the profile
-	UserAgent *string `json:"userAgent,omitempty"`
-}
-
-type CaptchaSolveImageResponse struct {
-	// Response message
-	Message *string `json:"message,omitempty"`
-	// Whether the action was successful
-	Success bool `json:"success"`
-}
-
-type FileUploadParams2 struct {
-	// The file to upload (binary) or URL string to download from
-	File FileUpload `json:"file"`
-	// Path to the file in the storage system
-	Path *string `json:"path,omitempty"`
-}
-
-type ComputerActionRequestMoveMouse struct {
-	Action ComputerActionRequestVariant0Action `json:"action"`
-	// X and Y coordinates [x, y]
-	Coordinates []float64 `json:"coordinates"`
-	// Keys to hold while moving
-	HoldKeys *[]string `json:"hold_keys,omitempty"`
-	// Whether to take a screenshot after the action
-	Screenshot *bool `json:"screenshot,omitempty"`
-}
-
-type ComputerActionRequestClickMouse struct {
-	Action ComputerActionRequestVariant1Action `json:"action"`
-	// Mouse button to click. Defaults to 'left'
-	Button *ComputerActionRequestVariant1Button `json:"button,omitempty"`
-	// Type of click (down, up, or click). Defaults to 'click'
-	ClickType *ComputerActionRequestVariant1ClickType `json:"click_type,omitempty"`
-	// X and Y coordinates [x, y]
-	Coordinates *[]float64 `json:"coordinates,omitempty"`
-	// Keys to hold while clicking
-	HoldKeys *[]string `json:"hold_keys,omitempty"`
-	// Number of clicks. Defaults to 1
-	NumClicks *float64 `json:"num_clicks,omitempty"`
-	// Whether to take a screenshot after the action
-	Screenshot *bool `json:"screenshot,omitempty"`
-}
-
-type ComputerActionRequestDragMouse struct {
-	Action ComputerActionRequestVariant2Action `json:"action"`
-	// Keys to hold while dragging
-	HoldKeys *[]string `json:"hold_keys,omitempty"`
-	// Array of [x, y] coordinate pairs
-	Path [][]float64 `json:"path"`
-	// Whether to take a screenshot after the action
-	Screenshot *bool `json:"screenshot,omitempty"`
-}
-
-type ComputerActionRequestScroll struct {
-	Action ComputerActionRequestVariant3Action `json:"action"`
-	// X and Y coordinates [x, y]
-	Coordinates *[]float64 `json:"coordinates,omitempty"`
-	// Horizontal scroll amount. Defaults to 0
-	DeltaX *float64 `json:"delta_x,omitempty"`
-	// Vertical scroll amount. Defaults to 0
-	DeltaY *float64 `json:"delta_y,omitempty"`
-	// Keys to hold while scrolling
-	HoldKeys *[]string `json:"hold_keys,omitempty"`
-	// Whether to take a screenshot after the action
-	Screenshot *bool `json:"screenshot,omitempty"`
-}
-
-type ComputerActionRequestPressKey struct {
-	Action ComputerActionRequestVariant4Action `json:"action"`
-	// Duration to hold keys in seconds
-	Duration *float64 `json:"duration,omitempty"`
-	// Keys to press
-	Keys []string `json:"keys"`
-	// Whether to take a screenshot after the action
-	Screenshot *bool `json:"screenshot,omitempty"`
-}
-
-type ComputerActionRequestTypeText struct {
-	Action ComputerActionRequestVariant5Action `json:"action"`
-	// Keys to hold while typing
-	HoldKeys *[]string `json:"hold_keys,omitempty"`
-	// Whether to take a screenshot after the action
-	Screenshot *bool `json:"screenshot,omitempty"`
-	// Text to type
-	Text string `json:"text"`
-}
-
-type ComputerActionRequestWait struct {
-	Action ComputerActionRequestVariant6Action `json:"action"`
-	// Duration to wait in seconds
-	Duration float64 `json:"duration"`
-	// Whether to take a screenshot after the action
-	Screenshot *bool `json:"screenshot,omitempty"`
-}
-
-type ComputerActionRequestTakeScreenshot struct {
-	Action ComputerActionRequestVariant7Action `json:"action"`
-}
-
-type ComputerActionRequestGetCursorPosition struct {
-	Action ComputerActionRequestVariant8Action `json:"action"`
-}
-
-type CaptchaStatusResponseItem struct {
-	// Timestamp when the state was created
-	Created *float64 `json:"created,omitempty"`
-	// Whether a captcha is currently being solved
-	IsSolvingCaptcha bool `json:"isSolvingCaptcha"`
-	// Timestamp when the state was last updated
-	LastUpdated *float64 `json:"lastUpdated,omitempty"`
-	// The page ID where the captcha is located
-	PageID string `json:"pageId"`
-	// Array of captcha tasks
-	Tasks []interface{} `json:"tasks"`
-	// The URL where the captcha is located
-	URL string `json:"url"`
-}
-
-// SessionCreateParamsCredentials Configuration for session credentials
-type SessionCreateParamsCredentials struct {
-	AutoSubmit  *bool `json:"autoSubmit,omitempty"`
-	BlurFields  *bool `json:"blurFields,omitempty"`
-	ExactOrigin *bool `json:"exactOrigin,omitempty"`
-}
-
-// SessionCreateParamsDebugConfig Configuration for the debug URL and session viewer. Controls interaction capabilities, cursor visibility, and other debug-related settings.
-type SessionCreateParamsDebugConfig struct {
-	// Allow interaction with the browser session via the debug URL viewer. When false, the session viewer will be view-only. Default is true.
-	Interactive *bool `json:"interactive,omitempty"`
-	// Show the OS-level mouse cursor in the WebRTC stream (headful mode only). When false, the system cursor will not be rendered in the stream. Default is true.
-	SystemCursor *bool `json:"systemCursor,omitempty"`
-}
-
-// SessionCreateParamsDeviceConfig Device configuration for the session. Specify 'mobile' for mobile device fingerprints and configurations.
-type SessionCreateParamsDeviceConfig struct {
-	Device *CreateSessionRequestDeviceConfigDevice `json:"device,omitempty"`
-}
-
-// SessionCreateParamsDimensions Viewport and browser window dimensions for the session. Mobile sessions require dimensions of at least 508x1074; smaller mobile dimensions are rejected with a 400 response.
-type SessionCreateParamsDimensions struct {
-	// Height of the session
-	Height int64 `json:"height"`
-	// Width of the session
-	Width int64 `json:"width"`
-}
-
-type SessionCreateParamsOptimizeBandwidthUnionMember1 struct {
-	BlockHosts       *[]string `json:"blockHosts,omitempty"`
-	BlockImages      *bool     `json:"blockImages,omitempty"`
-	BlockMedia       *bool     `json:"blockMedia,omitempty"`
-	BlockStylesheets *bool     `json:"blockStylesheets,omitempty"`
-	BlockURLPatterns *[]string `json:"blockUrlPatterns,omitempty"`
-}
-
-// SessionCreateParamsSessionContextCookiePartitionKey The partition key of the cookie
-type SessionCreateParamsSessionContextCookiePartitionKey struct {
-	// Indicates if the cookie has any ancestors that are cross-site to the topLevelSite.
-	HasCrossSiteAncestor bool `json:"hasCrossSiteAncestor"`
-	// The site of the top-level URL the browser was visiting at the start of the request to the endpoint that set the cookie.
-	TopLevelSite string `json:"topLevelSite"`
-}
-
-// SessionCreateParamsSessionContextCookie Cookies to initialize in the session
-type SessionCreateParamsSessionContextCookie struct {
-	// The domain of the cookie
-	Domain *string `json:"domain,omitempty"`
-	// The expiration date of the cookie
-	Expires *float64 `json:"expires,omitempty"`
-	// Whether the cookie is HTTP only
-	HTTPOnly *bool `json:"httpOnly,omitempty"`
-	// The name of the cookie
-	Name string `json:"name"`
-	// The partition key of the cookie
-	PartitionKey *SessionCreateParamsSessionContextCookiePartitionKey `json:"partitionKey,omitempty"`
-	// The path of the cookie
-	Path *string `json:"path,omitempty"`
-	// The priority of the cookie
-	Priority *CreateSessionRequestSessionContextCookiesItemPriority `json:"priority,omitempty"`
-	// Whether the cookie is a same party cookie
-	SameParty *bool `json:"sameParty,omitempty"`
-	// The same site attribute of the cookie
-	SameSite *CreateSessionRequestSessionContextCookiesItemSameSite `json:"sameSite,omitempty"`
-	// Whether the cookie is secure
-	Secure *bool `json:"secure,omitempty"`
-	// Whether the cookie is a session cookie
-	Session *bool `json:"session,omitempty"`
-	// The size of the cookie
-	Size *float64 `json:"size,omitempty"`
-	// The source port of the cookie
-	SourcePort *float64 `json:"sourcePort,omitempty"`
-	// The source scheme of the cookie
-	SourceScheme *CreateSessionRequestSessionContextCookiesItemSourceScheme `json:"sourceScheme,omitempty"`
-	// The URL of the cookie
-	URL *string `json:"url,omitempty"`
-	// The value of the cookie
-	Value string `json:"value"`
-}
-
-type SessionCreateParamsSessionContextIndexedDBDataRecordBlobFile struct {
-	BlobNumber   float64    `json:"blobNumber"`
-	Filename     *string    `json:"filename,omitempty"`
-	LastModified *time.Time `json:"lastModified,omitempty"`
-	MimeType     string     `json:"mimeType"`
-	Path         *string    `json:"path,omitempty"`
-	Size         float64    `json:"size"`
-}
-
-type SessionCreateParamsSessionContextIndexedDBDataRecord struct {
-	BlobFiles *[]SessionCreateParamsSessionContextIndexedDBDataRecordBlobFile `json:"blobFiles,omitempty"`
-	Key       interface{}                                                     `json:"key"`
-	Value     interface{}                                                     `json:"value"`
-}
-
-type SessionCreateParamsSessionContextIndexedDBData struct {
-	ID      float64                                                `json:"id"`
-	Name    string                                                 `json:"name"`
-	Records []SessionCreateParamsSessionContextIndexedDBDataRecord `json:"records"`
-}
-
-// SessionCreateParamsSessionContextIndexedDB Domain-specific indexedDB items to initialize in the session
-type SessionCreateParamsSessionContextIndexedDB struct {
-	Data []SessionCreateParamsSessionContextIndexedDBData `json:"data"`
-	ID   float64                                          `json:"id"`
-	Name string                                           `json:"name"`
-}
-
-// SessionCreateParamsSessionContext Session context data to be used in the created session. Sessions will start with an empty context by default.
-type SessionCreateParamsSessionContext struct {
-	// Cookies to initialize in the session
-	Cookies *[]SessionCreateParamsSessionContextCookie `json:"cookies,omitempty"`
-	// Domain-specific indexedDB items to initialize in the session
-	IndexedDB *map[string][]SessionCreateParamsSessionContextIndexedDB `json:"indexedDB,omitempty"`
-	// Domain-specific localStorage items to initialize in the session
-	LocalStorage *map[string]map[string]string `json:"localStorage,omitempty"`
-	// Domain-specific sessionStorage items to initialize in the session
-	SessionStorage *map[string]map[string]string `json:"sessionStorage,omitempty"`
-}
-
-// SessionCreateParamsStealthConfig Stealth configuration for the session
-type SessionCreateParamsStealthConfig struct {
-	// When true, captchas will be automatically solved when detected. When false, use the solve endpoints to manually initiate solving.
-	AutoCaptchaSolving *bool `json:"autoCaptchaSolving,omitempty"`
-	// This flag will make the browser act more human-like by moving the mouse in a more natural way.
-	HumanizeInteractions *bool `json:"humanizeInteractions,omitempty"`
-	// This flag will skip the fingerprint generation for the session.
-	SkipFingerprintInjection *bool `json:"skipFingerprintInjection,omitempty"`
-}
-
-// SessionCreateParamsUseProxyGeolocationGeolocation Geographic location for the proxy
-type SessionCreateParamsUseProxyGeolocationGeolocation struct {
-	// City name (e.g., 'NEW_YORK', 'LOS_ANGELES')
-	City *CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationCity `json:"city,omitempty"`
-	// Country code (e.g., 'US', 'GB', 'DE') - ISO 3166-1 alpha-2
-	Country CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationCountry `json:"country"`
-	// State code (e.g., 'NY', 'CA') - US states only
-	State *CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationState `json:"state,omitempty"`
-}
-
-type SessionCreateParamsUseProxyGeolocation struct {
-	// Geographic location for the proxy
-	Geolocation SessionCreateParamsUseProxyGeolocationGeolocation `json:"geolocation"`
-}
-
-type SessionCreateParamsUseProxyServer struct {
-	// Proxy server URL
-	Server string `json:"server"`
-}
-
-type CredentialListResponseCredential struct {
-	// Date and time the credential was created
-	CreatedAt time.Time `json:"createdAt"`
-	// Label for the credential
-	Label *string `json:"label,omitempty"`
-	// The namespace the credential is stored against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Website origin the credential is for
-	Origin *string `json:"origin,omitempty"`
-	// Date and time the credential was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
+func (r screenshotResponseJSON) RawJSON() string {
+	return r.raw
 }
 
 type ErrorResponseContext struct {
-	Keyword string      `json:"keyword"`
-	Message string      `json:"message"`
-	Params  interface{} `json:"params"`
+	Keyword string                   `json:"keyword" api:"required"`
+	Message string                   `json:"message" api:"required"`
+	Params  interface{}              `json:"params" api:"required"`
+	JSON    errorResponseContextJSON `json:"-"`
 }
 
-// ExtensionListResponseExtension List of extensions for the organization
-type ExtensionListResponseExtension struct {
-	// Creation timestamp
-	CreatedAt string `json:"createdAt"`
-	// Unique extension identifier (e.g., ext_12345)
-	ID string `json:"id"`
-	// Extension name
-	Name string `json:"name"`
-	// Last update timestamp
-	UpdatedAt string `json:"updatedAt"`
+// errorResponseContextJSON contains the JSON metadata for the struct [ErrorResponseContext]
+type errorResponseContextJSON struct {
+	Keyword     apijson.Field
+	Message     apijson.Field
+	Params      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ErrorResponseContext) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r errorResponseContextJSON) RawJSON() string {
+	return r.raw
 }
 
 // FileslistData Array of files for the current page
 type FileslistData struct {
 	// Timestamp when the file was created
-	LastModified time.Time `json:"lastModified"`
+	LastModified time.Time `json:"lastModified" api:"required"`
 	// Path to the file in the storage system
-	Path string `json:"path"`
+	Path string `json:"path" api:"required"`
 	// Size of the file in bytes
-	Size float64 `json:"size"`
+	Size float64           `json:"size" api:"required"`
+	JSON fileslistDataJSON `json:"-"`
 }
 
-// ProfileCreateResponseDimensions The dimensions associated with the profile
-type ProfileCreateResponseDimensions struct {
-	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
+// fileslistDataJSON contains the JSON metadata for the struct [FileslistData]
+type fileslistDataJSON struct {
+	LastModified apijson.Field
+	Path         apijson.Field
+	Size         apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
 }
 
-type ProfileCreateResponseFingerprintFingerprintBattery struct {
-	Charging        *bool    `json:"charging,omitempty"`
-	ChargingTime    *float64 `json:"chargingTime,omitempty"`
-	DischargingTime *float64 `json:"dischargingTime,omitempty"`
-	Level           *float64 `json:"level,omitempty"`
+func (r *FileslistData) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-type ProfileCreateResponseFingerprintFingerprintMultimediaDevicesMicro struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintMultimediaDevicesSpeaker struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintMultimediaDevicesWebcam struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintMultimediaDevices struct {
-	Micros   []ProfileCreateResponseFingerprintFingerprintMultimediaDevicesMicro   `json:"micros"`
-	Speakers []ProfileCreateResponseFingerprintFingerprintMultimediaDevicesSpeaker `json:"speakers"`
-	Webcams  []ProfileCreateResponseFingerprintFingerprintMultimediaDevicesWebcam  `json:"webcams"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintNavigatorExtraProperties struct {
-	GlobalPrivacyControl *bool    `json:"globalPrivacyControl,omitempty"`
-	InstalledApps        []string `json:"installedApps"`
-	PdfViewerEnabled     *bool    `json:"pdfViewerEnabled,omitempty"`
-	VendorFlavors        []string `json:"vendorFlavors"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintNavigatorUserAgentDataBrand struct {
-	Brand   *string `json:"brand,omitempty"`
-	Version *string `json:"version,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintNavigatorUserAgentData struct {
-	Brands   []ProfileCreateResponseFingerprintFingerprintNavigatorUserAgentDataBrand `json:"brands"`
-	Mobile   *bool                                                                    `json:"mobile,omitempty"`
-	Platform *string                                                                  `json:"platform,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintNavigator struct {
-	AppCodeName         *string                                                             `json:"appCodeName,omitempty"`
-	AppName             *string                                                             `json:"appName,omitempty"`
-	AppVersion          *string                                                             `json:"appVersion,omitempty"`
-	DeviceMemory        *float64                                                            `json:"deviceMemory,omitempty"`
-	DoNotTrack          *string                                                             `json:"doNotTrack,omitempty"`
-	ExtraProperties     ProfileCreateResponseFingerprintFingerprintNavigatorExtraProperties `json:"extraProperties"`
-	HardwareConcurrency *float64                                                            `json:"hardwareConcurrency,omitempty"`
-	Language            *string                                                             `json:"language,omitempty"`
-	Languages           []string                                                            `json:"languages"`
-	MaxTouchPoints      *float64                                                            `json:"maxTouchPoints,omitempty"`
-	Oscpu               *string                                                             `json:"oscpu,omitempty"`
-	Platform            *string                                                             `json:"platform,omitempty"`
-	Product             *string                                                             `json:"product,omitempty"`
-	ProductSub          *string                                                             `json:"productSub,omitempty"`
-	UserAgent           *string                                                             `json:"userAgent,omitempty"`
-	UserAgentData       ProfileCreateResponseFingerprintFingerprintNavigatorUserAgentData   `json:"userAgentData"`
-	Vendor              *string                                                             `json:"vendor,omitempty"`
-	VendorSub           *string                                                             `json:"vendorSub,omitempty"`
-	Webdriver           *bool                                                               `json:"webdriver,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintPluginsDataPluginMimeType struct {
-	Description   *string `json:"description,omitempty"`
-	EnabledPlugin *string `json:"enabledPlugin,omitempty"`
-	Suffixes      *string `json:"suffixes,omitempty"`
-	Type          *string `json:"type,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintPluginsDataPlugin struct {
-	Description *string                                                                `json:"description,omitempty"`
-	Filename    *string                                                                `json:"filename,omitempty"`
-	MimeTypes   []ProfileCreateResponseFingerprintFingerprintPluginsDataPluginMimeType `json:"mimeTypes"`
-	Name        *string                                                                `json:"name,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintPluginsData struct {
-	MimeTypes []string                                                       `json:"mimeTypes"`
-	Plugins   []ProfileCreateResponseFingerprintFingerprintPluginsDataPlugin `json:"plugins"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintScreen struct {
-	AvailHeight      *float64 `json:"availHeight,omitempty"`
-	AvailLeft        *float64 `json:"availLeft,omitempty"`
-	AvailTop         *float64 `json:"availTop,omitempty"`
-	AvailWidth       *float64 `json:"availWidth,omitempty"`
-	ClientHeight     *float64 `json:"clientHeight,omitempty"`
-	ClientWidth      *float64 `json:"clientWidth,omitempty"`
-	ColorDepth       *float64 `json:"colorDepth,omitempty"`
-	DevicePixelRatio *float64 `json:"devicePixelRatio,omitempty"`
-	HasHdr           *bool    `json:"hasHDR,omitempty"`
-	Height           *float64 `json:"height,omitempty"`
-	InnerHeight      *float64 `json:"innerHeight,omitempty"`
-	InnerWidth       *float64 `json:"innerWidth,omitempty"`
-	OuterHeight      *float64 `json:"outerHeight,omitempty"`
-	OuterWidth       *float64 `json:"outerWidth,omitempty"`
-	PageXOffset      *float64 `json:"pageXOffset,omitempty"`
-	PageYOffset      *float64 `json:"pageYOffset,omitempty"`
-	PixelDepth       *float64 `json:"pixelDepth,omitempty"`
-	ScreenX          *float64 `json:"screenX,omitempty"`
-	Width            *float64 `json:"width,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprintVideoCard struct {
-	Renderer *string `json:"renderer,omitempty"`
-	Vendor   *string `json:"vendor,omitempty"`
-}
-
-type ProfileCreateResponseFingerprintFingerprint struct {
-	AudioCodecs       map[string]string                                            `json:"audioCodecs"`
-	Battery           ProfileCreateResponseFingerprintFingerprintBattery           `json:"battery"`
-	Fonts             []string                                                     `json:"fonts"`
-	MockWebRtc        *bool                                                        `json:"mockWebRTC,omitempty"`
-	MultimediaDevices ProfileCreateResponseFingerprintFingerprintMultimediaDevices `json:"multimediaDevices"`
-	Navigator         ProfileCreateResponseFingerprintFingerprintNavigator         `json:"navigator"`
-	PluginsData       ProfileCreateResponseFingerprintFingerprintPluginsData       `json:"pluginsData"`
-	Screen            ProfileCreateResponseFingerprintFingerprintScreen            `json:"screen"`
-	Slim              *bool                                                        `json:"slim,omitempty"`
-	VideoCard         ProfileCreateResponseFingerprintFingerprintVideoCard         `json:"videoCard"`
-	VideoCodecs       map[string]string                                            `json:"videoCodecs"`
-}
-
-type ProfileCreateResponseFingerprintHeaders struct {
-	Accept                  *string `json:"accept,omitempty"`
-	AcceptEncoding          *string `json:"accept-encoding,omitempty"`
-	AcceptLanguage          *string `json:"accept-language,omitempty"`
-	Dnt                     *string `json:"dnt,omitempty"`
-	SecChUa                 *string `json:"sec-ch-ua,omitempty"`
-	SecChUaMobile           *string `json:"sec-ch-ua-mobile,omitempty"`
-	SecChUaPlatform         *string `json:"sec-ch-ua-platform,omitempty"`
-	SecFetchDest            *string `json:"sec-fetch-dest,omitempty"`
-	SecFetchMode            *string `json:"sec-fetch-mode,omitempty"`
-	SecFetchSite            *string `json:"sec-fetch-site,omitempty"`
-	SecFetchUser            *string `json:"sec-fetch-user,omitempty"`
-	UpgradeInsecureRequests *string `json:"upgrade-insecure-requests,omitempty"`
-	UserAgent               *string `json:"user-agent,omitempty"`
-}
-
-// ProfileCreateResponseFingerprint The fingerprint associated with the profile
-type ProfileCreateResponseFingerprint struct {
-	Fingerprint ProfileCreateResponseFingerprintFingerprint `json:"fingerprint"`
-	Headers     ProfileCreateResponseFingerprintHeaders     `json:"headers"`
-}
-
-// ProfileCreateParamsDimensions The dimensions associated with the profile
-type ProfileCreateParamsDimensions struct {
-	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
-}
-
-// ProfileListResponseProfileDimensions The dimensions associated with the profile
-type ProfileListResponseProfileDimensions struct {
-	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintBattery struct {
-	Charging        *bool    `json:"charging,omitempty"`
-	ChargingTime    *float64 `json:"chargingTime,omitempty"`
-	DischargingTime *float64 `json:"dischargingTime,omitempty"`
-	Level           *float64 `json:"level,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintMultimediaDevicesMicro struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintMultimediaDevicesSpeaker struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintMultimediaDevicesWebcam struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintMultimediaDevices struct {
-	Micros   []ProfileListResponseProfileFingerprintFingerprintMultimediaDevicesMicro   `json:"micros"`
-	Speakers []ProfileListResponseProfileFingerprintFingerprintMultimediaDevicesSpeaker `json:"speakers"`
-	Webcams  []ProfileListResponseProfileFingerprintFingerprintMultimediaDevicesWebcam  `json:"webcams"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintNavigatorExtraProperties struct {
-	GlobalPrivacyControl *bool    `json:"globalPrivacyControl,omitempty"`
-	InstalledApps        []string `json:"installedApps"`
-	PdfViewerEnabled     *bool    `json:"pdfViewerEnabled,omitempty"`
-	VendorFlavors        []string `json:"vendorFlavors"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintNavigatorUserAgentDataBrand struct {
-	Brand   *string `json:"brand,omitempty"`
-	Version *string `json:"version,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintNavigatorUserAgentData struct {
-	Brands   []ProfileListResponseProfileFingerprintFingerprintNavigatorUserAgentDataBrand `json:"brands"`
-	Mobile   *bool                                                                         `json:"mobile,omitempty"`
-	Platform *string                                                                       `json:"platform,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintNavigator struct {
-	AppCodeName         *string                                                                  `json:"appCodeName,omitempty"`
-	AppName             *string                                                                  `json:"appName,omitempty"`
-	AppVersion          *string                                                                  `json:"appVersion,omitempty"`
-	DeviceMemory        *float64                                                                 `json:"deviceMemory,omitempty"`
-	DoNotTrack          *string                                                                  `json:"doNotTrack,omitempty"`
-	ExtraProperties     ProfileListResponseProfileFingerprintFingerprintNavigatorExtraProperties `json:"extraProperties"`
-	HardwareConcurrency *float64                                                                 `json:"hardwareConcurrency,omitempty"`
-	Language            *string                                                                  `json:"language,omitempty"`
-	Languages           []string                                                                 `json:"languages"`
-	MaxTouchPoints      *float64                                                                 `json:"maxTouchPoints,omitempty"`
-	Oscpu               *string                                                                  `json:"oscpu,omitempty"`
-	Platform            *string                                                                  `json:"platform,omitempty"`
-	Product             *string                                                                  `json:"product,omitempty"`
-	ProductSub          *string                                                                  `json:"productSub,omitempty"`
-	UserAgent           *string                                                                  `json:"userAgent,omitempty"`
-	UserAgentData       ProfileListResponseProfileFingerprintFingerprintNavigatorUserAgentData   `json:"userAgentData"`
-	Vendor              *string                                                                  `json:"vendor,omitempty"`
-	VendorSub           *string                                                                  `json:"vendorSub,omitempty"`
-	Webdriver           *bool                                                                    `json:"webdriver,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintPluginsDataPluginMimeType struct {
-	Description   *string `json:"description,omitempty"`
-	EnabledPlugin *string `json:"enabledPlugin,omitempty"`
-	Suffixes      *string `json:"suffixes,omitempty"`
-	Type          *string `json:"type,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintPluginsDataPlugin struct {
-	Description *string                                                                     `json:"description,omitempty"`
-	Filename    *string                                                                     `json:"filename,omitempty"`
-	MimeTypes   []ProfileListResponseProfileFingerprintFingerprintPluginsDataPluginMimeType `json:"mimeTypes"`
-	Name        *string                                                                     `json:"name,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintPluginsData struct {
-	MimeTypes []string                                                            `json:"mimeTypes"`
-	Plugins   []ProfileListResponseProfileFingerprintFingerprintPluginsDataPlugin `json:"plugins"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintScreen struct {
-	AvailHeight      *float64 `json:"availHeight,omitempty"`
-	AvailLeft        *float64 `json:"availLeft,omitempty"`
-	AvailTop         *float64 `json:"availTop,omitempty"`
-	AvailWidth       *float64 `json:"availWidth,omitempty"`
-	ClientHeight     *float64 `json:"clientHeight,omitempty"`
-	ClientWidth      *float64 `json:"clientWidth,omitempty"`
-	ColorDepth       *float64 `json:"colorDepth,omitempty"`
-	DevicePixelRatio *float64 `json:"devicePixelRatio,omitempty"`
-	HasHdr           *bool    `json:"hasHDR,omitempty"`
-	Height           *float64 `json:"height,omitempty"`
-	InnerHeight      *float64 `json:"innerHeight,omitempty"`
-	InnerWidth       *float64 `json:"innerWidth,omitempty"`
-	OuterHeight      *float64 `json:"outerHeight,omitempty"`
-	OuterWidth       *float64 `json:"outerWidth,omitempty"`
-	PageXOffset      *float64 `json:"pageXOffset,omitempty"`
-	PageYOffset      *float64 `json:"pageYOffset,omitempty"`
-	PixelDepth       *float64 `json:"pixelDepth,omitempty"`
-	ScreenX          *float64 `json:"screenX,omitempty"`
-	Width            *float64 `json:"width,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprintVideoCard struct {
-	Renderer *string `json:"renderer,omitempty"`
-	Vendor   *string `json:"vendor,omitempty"`
-}
-
-type ProfileListResponseProfileFingerprintFingerprint struct {
-	AudioCodecs       map[string]string                                                 `json:"audioCodecs"`
-	Battery           ProfileListResponseProfileFingerprintFingerprintBattery           `json:"battery"`
-	Fonts             []string                                                          `json:"fonts"`
-	MockWebRtc        *bool                                                             `json:"mockWebRTC,omitempty"`
-	MultimediaDevices ProfileListResponseProfileFingerprintFingerprintMultimediaDevices `json:"multimediaDevices"`
-	Navigator         ProfileListResponseProfileFingerprintFingerprintNavigator         `json:"navigator"`
-	PluginsData       ProfileListResponseProfileFingerprintFingerprintPluginsData       `json:"pluginsData"`
-	Screen            ProfileListResponseProfileFingerprintFingerprintScreen            `json:"screen"`
-	Slim              *bool                                                             `json:"slim,omitempty"`
-	VideoCard         ProfileListResponseProfileFingerprintFingerprintVideoCard         `json:"videoCard"`
-	VideoCodecs       map[string]string                                                 `json:"videoCodecs"`
-}
-
-type ProfileListResponseProfileFingerprintHeaders struct {
-	Accept                  *string `json:"accept,omitempty"`
-	AcceptEncoding          *string `json:"accept-encoding,omitempty"`
-	AcceptLanguage          *string `json:"accept-language,omitempty"`
-	Dnt                     *string `json:"dnt,omitempty"`
-	SecChUa                 *string `json:"sec-ch-ua,omitempty"`
-	SecChUaMobile           *string `json:"sec-ch-ua-mobile,omitempty"`
-	SecChUaPlatform         *string `json:"sec-ch-ua-platform,omitempty"`
-	SecFetchDest            *string `json:"sec-fetch-dest,omitempty"`
-	SecFetchMode            *string `json:"sec-fetch-mode,omitempty"`
-	SecFetchSite            *string `json:"sec-fetch-site,omitempty"`
-	SecFetchUser            *string `json:"sec-fetch-user,omitempty"`
-	UpgradeInsecureRequests *string `json:"upgrade-insecure-requests,omitempty"`
-	UserAgent               *string `json:"user-agent,omitempty"`
-}
-
-// ProfileListResponseProfileFingerprint The fingerprint associated with the profile
-type ProfileListResponseProfileFingerprint struct {
-	Fingerprint ProfileListResponseProfileFingerprintFingerprint `json:"fingerprint"`
-	Headers     ProfileListResponseProfileFingerprintHeaders     `json:"headers"`
-}
-
-// ProfileListResponseProfile The list of profiles
-type ProfileListResponseProfile struct {
-	// The date and time when the profile was created
-	CreatedAt time.Time `json:"createdAt"`
-	// The credentials configuration associated with the profile
-	CredentialsConfig interface{} `json:"credentialsConfig"`
-	// The dimensions associated with the profile
-	Dimensions *ProfileListResponseProfileDimensions `json:"dimensions,omitempty"`
-	// The extension IDs associated with the profile
-	ExtensionIDs *[]string `json:"extensionIds,omitempty"`
-	// The fingerprint associated with the profile
-	Fingerprint *ProfileListResponseProfileFingerprint `json:"fingerprint,omitempty"`
-	// The unique identifier for the profile
-	ID string `json:"id"`
-	// The project ID associated with the profile
-	ProjectID *string `json:"projectId,omitempty"`
-	// The last session ID associated with the profile
-	SourceSessionID *string `json:"sourceSessionId,omitempty"`
-	// The status of the profile
-	Status ProfileListResponseProfilesItemStatus `json:"status"`
-	// The date and time when the profile was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
-	// The proxy configuration associated with the profile
-	UseProxyConfig interface{} `json:"useProxyConfig"`
-	// The user agent associated with the profile
-	UserAgent *string `json:"userAgent,omitempty"`
+func (r fileslistDataJSON) RawJSON() string {
+	return r.raw
 }
 
 type ScrapeResponseContent struct {
 	// Cleaned HTML content of the webpage
-	CleanedHTML *string `json:"cleaned_html,omitempty"`
+	CleanedHTML string `json:"cleaned_html"`
 	// Raw HTML content of the webpage
-	HTML *string `json:"html,omitempty"`
+	HTML string `json:"html"`
 	// Webpage content converted to Markdown
-	Markdown *string `json:"markdown,omitempty"`
+	Markdown string `json:"markdown"`
 	// Webpage content in Readability format
-	Readability *map[string]interface{} `json:"readability,omitempty"`
+	Readability map[string]interface{}    `json:"readability"`
+	JSON        scrapeResponseContentJSON `json:"-"`
+}
+
+// scrapeResponseContentJSON contains the JSON metadata for the struct [ScrapeResponseContent]
+type scrapeResponseContentJSON struct {
+	CleanedHTML apijson.Field
+	HTML        apijson.Field
+	Markdown    apijson.Field
+	Readability apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScrapeResponseContent) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scrapeResponseContentJSON) RawJSON() string {
+	return r.raw
 }
 
 type ScrapeResponseLink struct {
 	// Text content of the link
-	Text string `json:"text"`
+	Text string `json:"text" api:"required"`
 	// URL of the link
-	URL string `json:"url"`
+	URL  string                 `json:"url" api:"required"`
+	JSON scrapeResponseLinkJSON `json:"-"`
+}
+
+// scrapeResponseLinkJSON contains the JSON metadata for the struct [ScrapeResponseLink]
+type scrapeResponseLinkJSON struct {
+	Text        apijson.Field
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScrapeResponseLink) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scrapeResponseLinkJSON) RawJSON() string {
+	return r.raw
 }
 
 type ScrapeResponseMetadata struct {
 	// Author of the article content
-	ArticleAuthor *string `json:"articleAuthor,omitempty"`
+	ArticleAuthor string `json:"articleAuthor"`
 	// Author of the webpage content
-	Author *string `json:"author,omitempty"`
+	Author string `json:"author"`
 	// Canonical URL of the webpage
-	Canonical *string `json:"canonical,omitempty"`
+	Canonical string `json:"canonical"`
 	// Description of the webpage
-	Description *string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// Favicon URL of the website
-	Favicon *string `json:"favicon,omitempty"`
+	Favicon string `json:"favicon"`
 	// JSON-LD structured data from the webpage
-	JSONLd *interface{} `json:"jsonLd,omitempty"`
+	JSONLd interface{} `json:"jsonLd"`
 	// Keywords associated with the webpage
-	Keywords *string `json:"keywords,omitempty"`
+	Keywords string `json:"keywords"`
 	// Detected language of the webpage
-	Language *string `json:"language,omitempty"`
+	Language string `json:"language"`
 	// Last modification time of the content
-	ModifiedTime *string `json:"modifiedTime,omitempty"`
+	ModifiedTime string `json:"modifiedTime"`
 	// Open Graph description
-	OgDescription *string `json:"ogDescription,omitempty"`
+	OgDescription string `json:"ogDescription"`
 	// Open Graph image URL
-	OgImage *string `json:"ogImage,omitempty"`
+	OgImage string `json:"ogImage"`
 	// Open Graph site name
-	OgSiteName *string `json:"ogSiteName,omitempty"`
+	OgSiteName string `json:"ogSiteName"`
 	// Open Graph title
-	OgTitle *string `json:"ogTitle,omitempty"`
+	OgTitle string `json:"ogTitle"`
 	// Open Graph URL
-	OgURL *string `json:"ogUrl,omitempty"`
+	OgURL string `json:"ogUrl"`
 	// Publication time of the content
-	PublishedTime *string `json:"publishedTime,omitempty"`
+	PublishedTime string `json:"publishedTime"`
 	// HTTP status code of the response
-	StatusCode int64 `json:"statusCode"`
+	StatusCode int64 `json:"statusCode" api:"required"`
 	// Timestamp when the scrape was performed
-	Timestamp *time.Time `json:"timestamp,omitempty"`
+	Timestamp time.Time `json:"timestamp"`
 	// Title of the webpage
-	Title *string `json:"title,omitempty"`
+	Title string `json:"title"`
 	// Source URL of the scraped page
-	URLSource *string `json:"urlSource,omitempty"`
+	URLSource string                     `json:"urlSource"`
+	JSON      scrapeResponseMetadataJSON `json:"-"`
+}
+
+// scrapeResponseMetadataJSON contains the JSON metadata for the struct [ScrapeResponseMetadata]
+type scrapeResponseMetadataJSON struct {
+	ArticleAuthor apijson.Field
+	Author        apijson.Field
+	Canonical     apijson.Field
+	Description   apijson.Field
+	Favicon       apijson.Field
+	JSONLd        apijson.Field
+	Keywords      apijson.Field
+	Language      apijson.Field
+	ModifiedTime  apijson.Field
+	OgDescription apijson.Field
+	OgImage       apijson.Field
+	OgSiteName    apijson.Field
+	OgTitle       apijson.Field
+	OgURL         apijson.Field
+	PublishedTime apijson.Field
+	StatusCode    apijson.Field
+	Timestamp     apijson.Field
+	Title         apijson.Field
+	URLSource     apijson.Field
+	raw           string
+	ExtraFields   map[string]apijson.Field
+}
+
+func (r *ScrapeResponseMetadata) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scrapeResponseMetadataJSON) RawJSON() string {
+	return r.raw
 }
 
 type ScrapeResponsePdf struct {
 	// URL of the generated PDF
-	URL string `json:"url"`
+	URL  string                `json:"url" api:"required"`
+	JSON scrapeResponsePdfJSON `json:"-"`
+}
+
+// scrapeResponsePdfJSON contains the JSON metadata for the struct [ScrapeResponsePdf]
+type scrapeResponsePdfJSON struct {
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScrapeResponsePdf) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scrapeResponsePdfJSON) RawJSON() string {
+	return r.raw
 }
 
 type ScrapeResponseScreenshot struct {
 	// URL of the screenshot image
-	URL string `json:"url"`
+	URL  string                       `json:"url" api:"required"`
+	JSON scrapeResponseScreenshotJSON `json:"-"`
 }
 
-// SessionContextCookiePartitionKey The partition key of the cookie
-type SessionContextCookiePartitionKey struct {
-	// Indicates if the cookie has any ancestors that are cross-site to the topLevelSite.
-	HasCrossSiteAncestor bool `json:"hasCrossSiteAncestor"`
-	// The site of the top-level URL the browser was visiting at the start of the request to the endpoint that set the cookie.
-	TopLevelSite string `json:"topLevelSite"`
+// scrapeResponseScreenshotJSON contains the JSON metadata for the struct [ScrapeResponseScreenshot]
+type scrapeResponseScreenshotJSON struct {
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
 }
 
-// SessionContextCookie Cookies to initialize in the session
-type SessionContextCookie struct {
-	// The domain of the cookie
-	Domain *string `json:"domain,omitempty"`
-	// The expiration date of the cookie
-	Expires *float64 `json:"expires,omitempty"`
-	// Whether the cookie is HTTP only
-	HTTPOnly *bool `json:"httpOnly,omitempty"`
-	// The name of the cookie
-	Name string `json:"name"`
-	// The partition key of the cookie
-	PartitionKey *SessionContextCookiePartitionKey `json:"partitionKey,omitempty"`
-	// The path of the cookie
-	Path *string `json:"path,omitempty"`
-	// The priority of the cookie
-	Priority *SessionContextResponseCookiesItemPriority `json:"priority,omitempty"`
-	// Whether the cookie is a same party cookie
-	SameParty *bool `json:"sameParty,omitempty"`
-	// The same site attribute of the cookie
-	SameSite *SessionContextResponseCookiesItemSameSite `json:"sameSite,omitempty"`
-	// Whether the cookie is secure
-	Secure *bool `json:"secure,omitempty"`
-	// Whether the cookie is a session cookie
-	Session *bool `json:"session,omitempty"`
-	// The size of the cookie
-	Size *float64 `json:"size,omitempty"`
-	// The source port of the cookie
-	SourcePort *float64 `json:"sourcePort,omitempty"`
-	// The source scheme of the cookie
-	SourceScheme *SessionContextResponseCookiesItemSourceScheme `json:"sourceScheme,omitempty"`
-	// The URL of the cookie
-	URL *string `json:"url,omitempty"`
-	// The value of the cookie
-	Value string `json:"value"`
+func (r *ScrapeResponseScreenshot) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-type SessionContextIndexedDBDataRecordBlobFile struct {
-	BlobNumber   float64    `json:"blobNumber"`
-	Filename     *string    `json:"filename,omitempty"`
-	LastModified *time.Time `json:"lastModified,omitempty"`
-	MimeType     string     `json:"mimeType"`
-	Path         *string    `json:"path,omitempty"`
-	Size         float64    `json:"size"`
-}
-
-type SessionContextIndexedDBDataRecord struct {
-	BlobFiles *[]SessionContextIndexedDBDataRecordBlobFile `json:"blobFiles,omitempty"`
-	Key       interface{}                                  `json:"key"`
-	Value     interface{}                                  `json:"value"`
-}
-
-type SessionContextIndexedDBData struct {
-	ID      float64                             `json:"id"`
-	Name    string                              `json:"name"`
-	Records []SessionContextIndexedDBDataRecord `json:"records"`
-}
-
-// SessionContextIndexedDB Domain-specific indexedDB items to initialize in the session
-type SessionContextIndexedDB struct {
-	Data []SessionContextIndexedDBData `json:"data"`
-	ID   float64                       `json:"id"`
-	Name string                        `json:"name"`
-}
-
-type SessionCostResponseUsageBrowser struct {
-	// Billing unit for browser usage
-	Unit SessionCostResponseUsageBrowserUnit `json:"unit"`
-	// Billable browser usage value
-	Value float64 `json:"value"`
-}
-
-type SessionCostResponseUsageCaptcha struct {
-	// Billable captcha solves
-	Solves int64 `json:"solves"`
-}
-
-type SessionCostResponseUsageProxy struct {
-	// Billable Steel proxy bytes for the session
-	Bytes int64 `json:"bytes"`
-}
-
-// SessionCostResponseUsage Billable usage inputs used to calculate the costs
-type SessionCostResponseUsage struct {
-	Browser SessionCostResponseUsageBrowser `json:"browser"`
-	Captcha SessionCostResponseUsageCaptcha `json:"captcha"`
-	Proxy   SessionCostResponseUsageProxy   `json:"proxy"`
-}
-
-type SessionLiveDetailsResponsePage struct {
-	Favicon                    *string `json:"favicon,omitempty"`
-	ID                         string  `json:"id"`
-	SessionViewerFullscreenURL string  `json:"sessionViewerFullscreenUrl"`
-	SessionViewerURL           string  `json:"sessionViewerUrl"`
-	Title                      string  `json:"title"`
-	URL                        string  `json:"url"`
-}
-
-// SessionDebugConfig Configuration for the debug URL and session viewer. Controls interaction capabilities and cursor visibility.
-type SessionDebugConfig struct {
-	// Whether interaction is allowed via the debug URL viewer. When false, the session viewer is view-only.
-	Interactive *bool `json:"interactive,omitempty"`
-	// Whether the OS-level mouse cursor is shown in the WebRTC stream (headful mode only).
-	SystemCursor *bool `json:"systemCursor,omitempty"`
-}
-
-// SessionDeviceConfig Device configuration for the session
-type SessionDeviceConfig struct {
-	Device *SessionResponseDeviceConfigDevice `json:"device,omitempty"`
-}
-
-// SessionDimensions Viewport and browser window dimensions for the session
-type SessionDimensions struct {
-	// Height of the browser window
-	Height int64 `json:"height"`
-	// Width of the browser window
-	Width int64 `json:"width"`
-}
-
-// SessionOptimizeBandwidth Bandwidth optimizations that were applied to the session.
-type SessionOptimizeBandwidth struct {
-	BlockHosts       *[]string `json:"blockHosts,omitempty"`
-	BlockImages      *bool     `json:"blockImages,omitempty"`
-	BlockMedia       *bool     `json:"blockMedia,omitempty"`
-	BlockStylesheets *bool     `json:"blockStylesheets,omitempty"`
-	BlockURLPatterns *[]string `json:"blockUrlPatterns,omitempty"`
-}
-
-// SessionStealthConfig Stealth configuration for the session
-type SessionStealthConfig struct {
-	// When true, captchas will be automatically solved when detected. When false, use the solve endpoints to manually initiate solving.
-	AutoCaptchaSolving *bool `json:"autoCaptchaSolving,omitempty"`
-	// This flag will make the browser act more human-like by moving the mouse in a more natural way
-	HumanizeInteractions *bool `json:"humanizeInteractions,omitempty"`
-	// This flag will skip the fingerprint generation for the session.
-	SkipFingerprintInjection *bool `json:"skipFingerprintInjection,omitempty"`
-}
-
-// SessionslistSessionDebugConfig Configuration for the debug URL and session viewer. Controls interaction capabilities and cursor visibility.
-type SessionslistSessionDebugConfig struct {
-	// Whether interaction is allowed via the debug URL viewer. When false, the session viewer is view-only.
-	Interactive *bool `json:"interactive,omitempty"`
-	// Whether the OS-level mouse cursor is shown in the WebRTC stream (headful mode only).
-	SystemCursor *bool `json:"systemCursor,omitempty"`
-}
-
-// SessionslistSessionDeviceConfig Device configuration for the session
-type SessionslistSessionDeviceConfig struct {
-	Device *SessionsResponseSessionsItemDeviceConfigDevice `json:"device,omitempty"`
-}
-
-// SessionslistSessionDimensions Viewport and browser window dimensions for the session
-type SessionslistSessionDimensions struct {
-	// Height of the browser window
-	Height int64 `json:"height"`
-	// Width of the browser window
-	Width int64 `json:"width"`
-}
-
-// SessionslistSessionOptimizeBandwidth Bandwidth optimizations that were applied to the session.
-type SessionslistSessionOptimizeBandwidth struct {
-	BlockHosts       *[]string `json:"blockHosts,omitempty"`
-	BlockImages      *bool     `json:"blockImages,omitempty"`
-	BlockMedia       *bool     `json:"blockMedia,omitempty"`
-	BlockStylesheets *bool     `json:"blockStylesheets,omitempty"`
-	BlockURLPatterns *[]string `json:"blockUrlPatterns,omitempty"`
-}
-
-// SessionslistSessionStealthConfig Stealth configuration for the session
-type SessionslistSessionStealthConfig struct {
-	// When true, captchas will be automatically solved when detected. When false, use the solve endpoints to manually initiate solving.
-	AutoCaptchaSolving *bool `json:"autoCaptchaSolving,omitempty"`
-	// This flag will make the browser act more human-like by moving the mouse in a more natural way
-	HumanizeInteractions *bool `json:"humanizeInteractions,omitempty"`
-	// This flag will skip the fingerprint generation for the session.
-	SkipFingerprintInjection *bool `json:"skipFingerprintInjection,omitempty"`
-}
-
-// SessionslistSession List of browser sessions
-type SessionslistSession struct {
-	// Timestamp when the session started
-	CreatedAt time.Time `json:"createdAt"`
-	// Amount of credits consumed by the session
-	CreditsUsed int64 `json:"creditsUsed"`
-	// Configuration for the debug URL and session viewer. Controls interaction capabilities and cursor visibility.
-	DebugConfig *SessionslistSessionDebugConfig `json:"debugConfig,omitempty"`
-	// URL for debugging the session
-	DebugURL string `json:"debugUrl"`
-	// Device configuration for the session
-	DeviceConfig *SessionslistSessionDeviceConfig `json:"deviceConfig,omitempty"`
-	// Viewport and browser window dimensions for the session
-	Dimensions SessionslistSessionDimensions `json:"dimensions"`
-	// Duration of the session in milliseconds
-	Duration int64 `json:"duration"`
-	// Number of events processed in the session
-	EventCount int64 `json:"eventCount"`
-	// Launch the browser in fullscreen mode, covering the full screen with no Chrome UI.
-	Fullscreen *bool `json:"fullscreen,omitempty"`
-	// Indicates if the session is headless or headful
-	Headless *bool `json:"headless,omitempty"`
-	// Unique identifier for the session
-	ID string `json:"id"`
-	// Inactivity timeout in milliseconds, if one was set when the session was created
-	InactivityTimeout *int64 `json:"inactivityTimeout,omitempty"`
-	// Indicates if Selenium is used in the session
-	IsSelenium *bool `json:"isSelenium,omitempty"`
-	// Bandwidth optimizations that were applied to the session.
-	OptimizeBandwidth SessionslistSessionOptimizeBandwidth `json:"optimizeBandwidth"`
-	// This flag will persist the profile for the session.
-	PersistProfile *bool `json:"persistProfile,omitempty"`
-	// The ID of the profile associated with the session
-	ProfileID *string `json:"profileId,omitempty"`
-	// The project associated with the session
-	ProjectID *string `json:"projectId,omitempty"`
-	// Amount of data transmitted through the proxy
-	ProxyBytesUsed int64 `json:"proxyBytesUsed"`
-	// Source of the proxy used for the session
-	ProxySource *SessionsResponseSessionsItemProxySource `json:"proxySource,omitempty"`
-	// The region where the session was created.
-	Region *SessionsResponseSessionsItemRegion `json:"region,omitempty"`
-	// Why the session reached a terminal state. Null while the session is live, or when the reason is unknown (e.g. sessions created before this was tracked). One of: user_requested (released via the API/SDK), timeout (hard `timeout` elapsed), inactivity_timeout (no activity for the configured window), creation_timeout (never started in time), startup_failed (could not be dispatched), browser_closed (the browser or agent closed itself — not a crash), browser_crashed (the browser crashed or its machine became unresponsive).
-	ReleaseReason *SessionsResponseSessionsItemReleaseReason `json:"releaseReason,omitempty"`
-	// URL to view session details
-	SessionViewerURL string `json:"sessionViewerUrl"`
-	// Indicates if captcha solving is enabled
-	SolveCaptcha *bool `json:"solveCaptcha,omitempty"`
-	// Status of the session
-	Status SessionsResponseSessionsItemStatus `json:"status"`
-	// Stealth configuration for the session
-	StealthConfig *SessionslistSessionStealthConfig `json:"stealthConfig,omitempty"`
-	// Session timeout duration in milliseconds
-	Timeout int64 `json:"timeout"`
-	// User agent string used in the session
-	UserAgent *string `json:"userAgent,omitempty"`
-	// URL for the session's WebSocket connection
-	WebsocketURL string `json:"websocketUrl"`
-}
-
-// ProfileGetResponseDimensions The dimensions associated with the profile
-type ProfileGetResponseDimensions struct {
-	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
-}
-
-type ProfileGetResponseFingerprintFingerprintBattery struct {
-	Charging        *bool    `json:"charging,omitempty"`
-	ChargingTime    *float64 `json:"chargingTime,omitempty"`
-	DischargingTime *float64 `json:"dischargingTime,omitempty"`
-	Level           *float64 `json:"level,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintMultimediaDevicesMicro struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintMultimediaDevicesSpeaker struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintMultimediaDevicesWebcam struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintMultimediaDevices struct {
-	Micros   []ProfileGetResponseFingerprintFingerprintMultimediaDevicesMicro   `json:"micros"`
-	Speakers []ProfileGetResponseFingerprintFingerprintMultimediaDevicesSpeaker `json:"speakers"`
-	Webcams  []ProfileGetResponseFingerprintFingerprintMultimediaDevicesWebcam  `json:"webcams"`
-}
-
-type ProfileGetResponseFingerprintFingerprintNavigatorExtraProperties struct {
-	GlobalPrivacyControl *bool    `json:"globalPrivacyControl,omitempty"`
-	InstalledApps        []string `json:"installedApps"`
-	PdfViewerEnabled     *bool    `json:"pdfViewerEnabled,omitempty"`
-	VendorFlavors        []string `json:"vendorFlavors"`
-}
-
-type ProfileGetResponseFingerprintFingerprintNavigatorUserAgentDataBrand struct {
-	Brand   *string `json:"brand,omitempty"`
-	Version *string `json:"version,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintNavigatorUserAgentData struct {
-	Brands   []ProfileGetResponseFingerprintFingerprintNavigatorUserAgentDataBrand `json:"brands"`
-	Mobile   *bool                                                                 `json:"mobile,omitempty"`
-	Platform *string                                                               `json:"platform,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintNavigator struct {
-	AppCodeName         *string                                                          `json:"appCodeName,omitempty"`
-	AppName             *string                                                          `json:"appName,omitempty"`
-	AppVersion          *string                                                          `json:"appVersion,omitempty"`
-	DeviceMemory        *float64                                                         `json:"deviceMemory,omitempty"`
-	DoNotTrack          *string                                                          `json:"doNotTrack,omitempty"`
-	ExtraProperties     ProfileGetResponseFingerprintFingerprintNavigatorExtraProperties `json:"extraProperties"`
-	HardwareConcurrency *float64                                                         `json:"hardwareConcurrency,omitempty"`
-	Language            *string                                                          `json:"language,omitempty"`
-	Languages           []string                                                         `json:"languages"`
-	MaxTouchPoints      *float64                                                         `json:"maxTouchPoints,omitempty"`
-	Oscpu               *string                                                          `json:"oscpu,omitempty"`
-	Platform            *string                                                          `json:"platform,omitempty"`
-	Product             *string                                                          `json:"product,omitempty"`
-	ProductSub          *string                                                          `json:"productSub,omitempty"`
-	UserAgent           *string                                                          `json:"userAgent,omitempty"`
-	UserAgentData       ProfileGetResponseFingerprintFingerprintNavigatorUserAgentData   `json:"userAgentData"`
-	Vendor              *string                                                          `json:"vendor,omitempty"`
-	VendorSub           *string                                                          `json:"vendorSub,omitempty"`
-	Webdriver           *bool                                                            `json:"webdriver,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintPluginsDataPluginMimeType struct {
-	Description   *string `json:"description,omitempty"`
-	EnabledPlugin *string `json:"enabledPlugin,omitempty"`
-	Suffixes      *string `json:"suffixes,omitempty"`
-	Type          *string `json:"type,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintPluginsDataPlugin struct {
-	Description *string                                                             `json:"description,omitempty"`
-	Filename    *string                                                             `json:"filename,omitempty"`
-	MimeTypes   []ProfileGetResponseFingerprintFingerprintPluginsDataPluginMimeType `json:"mimeTypes"`
-	Name        *string                                                             `json:"name,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintPluginsData struct {
-	MimeTypes []string                                                    `json:"mimeTypes"`
-	Plugins   []ProfileGetResponseFingerprintFingerprintPluginsDataPlugin `json:"plugins"`
-}
-
-type ProfileGetResponseFingerprintFingerprintScreen struct {
-	AvailHeight      *float64 `json:"availHeight,omitempty"`
-	AvailLeft        *float64 `json:"availLeft,omitempty"`
-	AvailTop         *float64 `json:"availTop,omitempty"`
-	AvailWidth       *float64 `json:"availWidth,omitempty"`
-	ClientHeight     *float64 `json:"clientHeight,omitempty"`
-	ClientWidth      *float64 `json:"clientWidth,omitempty"`
-	ColorDepth       *float64 `json:"colorDepth,omitempty"`
-	DevicePixelRatio *float64 `json:"devicePixelRatio,omitempty"`
-	HasHdr           *bool    `json:"hasHDR,omitempty"`
-	Height           *float64 `json:"height,omitempty"`
-	InnerHeight      *float64 `json:"innerHeight,omitempty"`
-	InnerWidth       *float64 `json:"innerWidth,omitempty"`
-	OuterHeight      *float64 `json:"outerHeight,omitempty"`
-	OuterWidth       *float64 `json:"outerWidth,omitempty"`
-	PageXOffset      *float64 `json:"pageXOffset,omitempty"`
-	PageYOffset      *float64 `json:"pageYOffset,omitempty"`
-	PixelDepth       *float64 `json:"pixelDepth,omitempty"`
-	ScreenX          *float64 `json:"screenX,omitempty"`
-	Width            *float64 `json:"width,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprintVideoCard struct {
-	Renderer *string `json:"renderer,omitempty"`
-	Vendor   *string `json:"vendor,omitempty"`
-}
-
-type ProfileGetResponseFingerprintFingerprint struct {
-	AudioCodecs       map[string]string                                         `json:"audioCodecs"`
-	Battery           ProfileGetResponseFingerprintFingerprintBattery           `json:"battery"`
-	Fonts             []string                                                  `json:"fonts"`
-	MockWebRtc        *bool                                                     `json:"mockWebRTC,omitempty"`
-	MultimediaDevices ProfileGetResponseFingerprintFingerprintMultimediaDevices `json:"multimediaDevices"`
-	Navigator         ProfileGetResponseFingerprintFingerprintNavigator         `json:"navigator"`
-	PluginsData       ProfileGetResponseFingerprintFingerprintPluginsData       `json:"pluginsData"`
-	Screen            ProfileGetResponseFingerprintFingerprintScreen            `json:"screen"`
-	Slim              *bool                                                     `json:"slim,omitempty"`
-	VideoCard         ProfileGetResponseFingerprintFingerprintVideoCard         `json:"videoCard"`
-	VideoCodecs       map[string]string                                         `json:"videoCodecs"`
-}
-
-type ProfileGetResponseFingerprintHeaders struct {
-	Accept                  *string `json:"accept,omitempty"`
-	AcceptEncoding          *string `json:"accept-encoding,omitempty"`
-	AcceptLanguage          *string `json:"accept-language,omitempty"`
-	Dnt                     *string `json:"dnt,omitempty"`
-	SecChUa                 *string `json:"sec-ch-ua,omitempty"`
-	SecChUaMobile           *string `json:"sec-ch-ua-mobile,omitempty"`
-	SecChUaPlatform         *string `json:"sec-ch-ua-platform,omitempty"`
-	SecFetchDest            *string `json:"sec-fetch-dest,omitempty"`
-	SecFetchMode            *string `json:"sec-fetch-mode,omitempty"`
-	SecFetchSite            *string `json:"sec-fetch-site,omitempty"`
-	SecFetchUser            *string `json:"sec-fetch-user,omitempty"`
-	UpgradeInsecureRequests *string `json:"upgrade-insecure-requests,omitempty"`
-	UserAgent               *string `json:"user-agent,omitempty"`
-}
-
-// ProfileGetResponseFingerprint The fingerprint associated with the profile
-type ProfileGetResponseFingerprint struct {
-	Fingerprint ProfileGetResponseFingerprintFingerprint `json:"fingerprint"`
-	Headers     ProfileGetResponseFingerprintHeaders     `json:"headers"`
-}
-
-// ProfileUpdateParamsDimensions The dimensions associated with the profile
-type ProfileUpdateParamsDimensions struct {
-	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
-}
-
-// ProfileUpdateResponseDimensions The dimensions associated with the profile
-type ProfileUpdateResponseDimensions struct {
-	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintBattery struct {
-	Charging        *bool    `json:"charging,omitempty"`
-	ChargingTime    *float64 `json:"chargingTime,omitempty"`
-	DischargingTime *float64 `json:"dischargingTime,omitempty"`
-	Level           *float64 `json:"level,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintMultimediaDevicesMicro struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintMultimediaDevicesSpeaker struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintMultimediaDevicesWebcam struct {
-	DeviceID *string `json:"deviceId,omitempty"`
-	GroupID  *string `json:"groupId,omitempty"`
-	Kind     *string `json:"kind,omitempty"`
-	Label    *string `json:"label,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintMultimediaDevices struct {
-	Micros   []ProfileUpdateResponseFingerprintFingerprintMultimediaDevicesMicro   `json:"micros"`
-	Speakers []ProfileUpdateResponseFingerprintFingerprintMultimediaDevicesSpeaker `json:"speakers"`
-	Webcams  []ProfileUpdateResponseFingerprintFingerprintMultimediaDevicesWebcam  `json:"webcams"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintNavigatorExtraProperties struct {
-	GlobalPrivacyControl *bool    `json:"globalPrivacyControl,omitempty"`
-	InstalledApps        []string `json:"installedApps"`
-	PdfViewerEnabled     *bool    `json:"pdfViewerEnabled,omitempty"`
-	VendorFlavors        []string `json:"vendorFlavors"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintNavigatorUserAgentDataBrand struct {
-	Brand   *string `json:"brand,omitempty"`
-	Version *string `json:"version,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintNavigatorUserAgentData struct {
-	Brands   []ProfileUpdateResponseFingerprintFingerprintNavigatorUserAgentDataBrand `json:"brands"`
-	Mobile   *bool                                                                    `json:"mobile,omitempty"`
-	Platform *string                                                                  `json:"platform,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintNavigator struct {
-	AppCodeName         *string                                                             `json:"appCodeName,omitempty"`
-	AppName             *string                                                             `json:"appName,omitempty"`
-	AppVersion          *string                                                             `json:"appVersion,omitempty"`
-	DeviceMemory        *float64                                                            `json:"deviceMemory,omitempty"`
-	DoNotTrack          *string                                                             `json:"doNotTrack,omitempty"`
-	ExtraProperties     ProfileUpdateResponseFingerprintFingerprintNavigatorExtraProperties `json:"extraProperties"`
-	HardwareConcurrency *float64                                                            `json:"hardwareConcurrency,omitempty"`
-	Language            *string                                                             `json:"language,omitempty"`
-	Languages           []string                                                            `json:"languages"`
-	MaxTouchPoints      *float64                                                            `json:"maxTouchPoints,omitempty"`
-	Oscpu               *string                                                             `json:"oscpu,omitempty"`
-	Platform            *string                                                             `json:"platform,omitempty"`
-	Product             *string                                                             `json:"product,omitempty"`
-	ProductSub          *string                                                             `json:"productSub,omitempty"`
-	UserAgent           *string                                                             `json:"userAgent,omitempty"`
-	UserAgentData       ProfileUpdateResponseFingerprintFingerprintNavigatorUserAgentData   `json:"userAgentData"`
-	Vendor              *string                                                             `json:"vendor,omitempty"`
-	VendorSub           *string                                                             `json:"vendorSub,omitempty"`
-	Webdriver           *bool                                                               `json:"webdriver,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintPluginsDataPluginMimeType struct {
-	Description   *string `json:"description,omitempty"`
-	EnabledPlugin *string `json:"enabledPlugin,omitempty"`
-	Suffixes      *string `json:"suffixes,omitempty"`
-	Type          *string `json:"type,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintPluginsDataPlugin struct {
-	Description *string                                                                `json:"description,omitempty"`
-	Filename    *string                                                                `json:"filename,omitempty"`
-	MimeTypes   []ProfileUpdateResponseFingerprintFingerprintPluginsDataPluginMimeType `json:"mimeTypes"`
-	Name        *string                                                                `json:"name,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintPluginsData struct {
-	MimeTypes []string                                                       `json:"mimeTypes"`
-	Plugins   []ProfileUpdateResponseFingerprintFingerprintPluginsDataPlugin `json:"plugins"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintScreen struct {
-	AvailHeight      *float64 `json:"availHeight,omitempty"`
-	AvailLeft        *float64 `json:"availLeft,omitempty"`
-	AvailTop         *float64 `json:"availTop,omitempty"`
-	AvailWidth       *float64 `json:"availWidth,omitempty"`
-	ClientHeight     *float64 `json:"clientHeight,omitempty"`
-	ClientWidth      *float64 `json:"clientWidth,omitempty"`
-	ColorDepth       *float64 `json:"colorDepth,omitempty"`
-	DevicePixelRatio *float64 `json:"devicePixelRatio,omitempty"`
-	HasHdr           *bool    `json:"hasHDR,omitempty"`
-	Height           *float64 `json:"height,omitempty"`
-	InnerHeight      *float64 `json:"innerHeight,omitempty"`
-	InnerWidth       *float64 `json:"innerWidth,omitempty"`
-	OuterHeight      *float64 `json:"outerHeight,omitempty"`
-	OuterWidth       *float64 `json:"outerWidth,omitempty"`
-	PageXOffset      *float64 `json:"pageXOffset,omitempty"`
-	PageYOffset      *float64 `json:"pageYOffset,omitempty"`
-	PixelDepth       *float64 `json:"pixelDepth,omitempty"`
-	ScreenX          *float64 `json:"screenX,omitempty"`
-	Width            *float64 `json:"width,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprintVideoCard struct {
-	Renderer *string `json:"renderer,omitempty"`
-	Vendor   *string `json:"vendor,omitempty"`
-}
-
-type ProfileUpdateResponseFingerprintFingerprint struct {
-	AudioCodecs       map[string]string                                            `json:"audioCodecs"`
-	Battery           ProfileUpdateResponseFingerprintFingerprintBattery           `json:"battery"`
-	Fonts             []string                                                     `json:"fonts"`
-	MockWebRtc        *bool                                                        `json:"mockWebRTC,omitempty"`
-	MultimediaDevices ProfileUpdateResponseFingerprintFingerprintMultimediaDevices `json:"multimediaDevices"`
-	Navigator         ProfileUpdateResponseFingerprintFingerprintNavigator         `json:"navigator"`
-	PluginsData       ProfileUpdateResponseFingerprintFingerprintPluginsData       `json:"pluginsData"`
-	Screen            ProfileUpdateResponseFingerprintFingerprintScreen            `json:"screen"`
-	Slim              *bool                                                        `json:"slim,omitempty"`
-	VideoCard         ProfileUpdateResponseFingerprintFingerprintVideoCard         `json:"videoCard"`
-	VideoCodecs       map[string]string                                            `json:"videoCodecs"`
-}
-
-type ProfileUpdateResponseFingerprintHeaders struct {
-	Accept                  *string `json:"accept,omitempty"`
-	AcceptEncoding          *string `json:"accept-encoding,omitempty"`
-	AcceptLanguage          *string `json:"accept-language,omitempty"`
-	Dnt                     *string `json:"dnt,omitempty"`
-	SecChUa                 *string `json:"sec-ch-ua,omitempty"`
-	SecChUaMobile           *string `json:"sec-ch-ua-mobile,omitempty"`
-	SecChUaPlatform         *string `json:"sec-ch-ua-platform,omitempty"`
-	SecFetchDest            *string `json:"sec-fetch-dest,omitempty"`
-	SecFetchMode            *string `json:"sec-fetch-mode,omitempty"`
-	SecFetchSite            *string `json:"sec-fetch-site,omitempty"`
-	SecFetchUser            *string `json:"sec-fetch-user,omitempty"`
-	UpgradeInsecureRequests *string `json:"upgrade-insecure-requests,omitempty"`
-	UserAgent               *string `json:"user-agent,omitempty"`
-}
-
-// ProfileUpdateResponseFingerprint The fingerprint associated with the profile
-type ProfileUpdateResponseFingerprint struct {
-	Fingerprint ProfileUpdateResponseFingerprintFingerprint `json:"fingerprint"`
-	Headers     ProfileUpdateResponseFingerprintHeaders     `json:"headers"`
-}
-
-type CredentialListParams struct {
-	ProjectID *string `json:"projectId,omitempty"`
-	Namespace *string `json:"namespace,omitempty"`
-	Origin    *string `json:"origin,omitempty"`
-}
-
-type ProfileListParams struct {
-	ProjectID *string `json:"projectId,omitempty"`
-}
-
-type ProfileGetParams struct {
-	ProjectID *string `json:"projectId,omitempty"`
-}
-
-type ProfileUpdateQueryParams struct {
-	ProjectID *string `json:"projectId,omitempty"`
-}
-
-type SessionListParams struct {
-	CursorID  *string            `json:"cursorId,omitempty"`
-	Limit     *int64             `json:"limit,omitempty"`
-	Status    *GetSessionsStatus `json:"status,omitempty"`
-	ProjectID *string            `json:"projectId,omitempty"`
-}
-
-type SessionReleaseAllQueryParams struct {
-	ProjectID *string `json:"projectId,omitempty"`
-}
-
-type SessionAgentTracesParams struct {
-	Namespace  *string    `json:"namespace,omitempty"`
-	StartTime  *time.Time `json:"startTime,omitempty"`
-	EndTime    *time.Time `json:"endTime,omitempty"`
-	EventTypes *[]string  `json:"eventTypes,omitempty"`
-}
-
-type SessionEventsParams struct {
-	Compressed *bool   `json:"compressed,omitempty"`
-	Limit      *int64  `json:"limit,omitempty"`
-	Pointer    *string `json:"pointer,omitempty"`
+func (r scrapeResponseScreenshotJSON) RawJSON() string {
+	return r.raw
 }
 
 type CaptchaStatusResponse []CaptchaStatusResponseItem

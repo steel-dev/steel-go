@@ -2,7 +2,10 @@ package steel
 
 import (
 	"context"
+	"github.com/steel-dev/steel-go/internal/apijson"
+	"github.com/steel-dev/steel-go/internal/param"
 	"net/url"
+	"time"
 )
 
 type Credentials struct {
@@ -60,4 +63,196 @@ func (r *Credentials) Delete(ctx context.Context, body CredentialDeleteParams, o
 		return nil, err
 	}
 	return &out, nil
+}
+
+type CredentialCreateParams struct {
+	// Label for the credential
+	Label param.Field[string] `json:"label"`
+	// The namespace the credential is stored against. Defaults to "default".
+	Namespace param.Field[string] `json:"namespace"`
+	// Website origin the credential is for
+	Origin param.Field[string] `json:"origin"`
+	// Project to store the credential in.
+	ProjectID param.Field[string] `json:"projectId"`
+	// Value for the credential
+	Value param.Field[map[string]string] `json:"value" api:"required"`
+}
+
+func (r CredentialCreateParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type CredentialListResponse struct {
+	Credentials []CredentialListResponseCredential `json:"credentials" api:"required"`
+	JSON        credentialListResponseJSON         `json:"-"`
+}
+
+// credentialListResponseJSON contains the JSON metadata for the struct [CredentialListResponse]
+type credentialListResponseJSON struct {
+	Credentials apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *CredentialListResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r credentialListResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type CredentialCreateResponse struct {
+	// Date and time the credential was created
+	CreatedAt time.Time `json:"createdAt" api:"required"`
+	// Label for the credential
+	Label string `json:"label"`
+	// The namespace the credential is stored against. Defaults to "default".
+	Namespace string `json:"namespace"`
+	// Website origin the credential is for
+	Origin string `json:"origin"`
+	// Date and time the credential was last updated
+	UpdatedAt time.Time                    `json:"updatedAt" api:"required"`
+	JSON      credentialCreateResponseJSON `json:"-"`
+}
+
+// credentialCreateResponseJSON contains the JSON metadata for the struct [CredentialCreateResponse]
+type credentialCreateResponseJSON struct {
+	CreatedAt   apijson.Field
+	Label       apijson.Field
+	Namespace   apijson.Field
+	Origin      apijson.Field
+	UpdatedAt   apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *CredentialCreateResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r credentialCreateResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type CredentialDeleteParams struct {
+	// The namespace the credential is stored against. Defaults to "default".
+	Namespace param.Field[string] `json:"namespace"`
+	// Website origin the credential is for
+	Origin param.Field[string] `json:"origin" api:"required"`
+	// Project to delete the credential from.
+	ProjectID param.Field[string] `json:"projectId"`
+}
+
+func (r CredentialDeleteParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type CredentialUpdateParams struct {
+	// Label for the credential
+	Label param.Field[string] `json:"label"`
+	// The namespace the credential is stored against. Defaults to "default".
+	Namespace param.Field[string] `json:"namespace"`
+	// Website origin the credential is for
+	Origin param.Field[string] `json:"origin"`
+	// Project to update the credential in.
+	ProjectID param.Field[string] `json:"projectId"`
+	// Value for the credential
+	Value param.Field[map[string]string] `json:"value"`
+}
+
+func (r CredentialUpdateParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type CredentialDeleteResponse struct {
+	Success bool                         `json:"success" api:"required"`
+	JSON    credentialDeleteResponseJSON `json:"-"`
+}
+
+// credentialDeleteResponseJSON contains the JSON metadata for the struct [CredentialDeleteResponse]
+type credentialDeleteResponseJSON struct {
+	Success     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *CredentialDeleteResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r credentialDeleteResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type CredentialUpdateResponse struct {
+	// Date and time the credential was created
+	CreatedAt time.Time `json:"createdAt" api:"required"`
+	// Label for the credential
+	Label string `json:"label"`
+	// The namespace the credential is stored against. Defaults to "default".
+	Namespace string `json:"namespace"`
+	// Website origin the credential is for
+	Origin string `json:"origin"`
+	// Date and time the credential was last updated
+	UpdatedAt time.Time                    `json:"updatedAt" api:"required"`
+	JSON      credentialUpdateResponseJSON `json:"-"`
+}
+
+// credentialUpdateResponseJSON contains the JSON metadata for the struct [CredentialUpdateResponse]
+type credentialUpdateResponseJSON struct {
+	CreatedAt   apijson.Field
+	Label       apijson.Field
+	Namespace   apijson.Field
+	Origin      apijson.Field
+	UpdatedAt   apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *CredentialUpdateResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r credentialUpdateResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type CredentialListResponseCredential struct {
+	// Date and time the credential was created
+	CreatedAt time.Time `json:"createdAt" api:"required"`
+	// Label for the credential
+	Label string `json:"label"`
+	// The namespace the credential is stored against. Defaults to "default".
+	Namespace string `json:"namespace"`
+	// Website origin the credential is for
+	Origin string `json:"origin"`
+	// Date and time the credential was last updated
+	UpdatedAt time.Time                            `json:"updatedAt" api:"required"`
+	JSON      credentialListResponseCredentialJSON `json:"-"`
+}
+
+// credentialListResponseCredentialJSON contains the JSON metadata for the struct [CredentialListResponseCredential]
+type credentialListResponseCredentialJSON struct {
+	CreatedAt   apijson.Field
+	Label       apijson.Field
+	Namespace   apijson.Field
+	Origin      apijson.Field
+	UpdatedAt   apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *CredentialListResponseCredential) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r credentialListResponseCredentialJSON) RawJSON() string {
+	return r.raw
+}
+
+type CredentialListParams struct {
+	ProjectID *string `json:"projectId,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
+	Origin    *string `json:"origin,omitempty"`
 }

@@ -44,3 +44,10 @@ func (r *Files) Delete(ctx context.Context, path string, opts ...RequestOption) 
 	reqPath := fmt.Sprintf("/v1/files/%s", path)
 	return r.client.do(ctx, "DELETE", reqPath, nil, nil, opts...)
 }
+
+type FileUploadParams struct {
+	// The file to upload (binary) or URL string to download from
+	File FileUpload `json:"file"`
+	// Path to the file in the storage system
+	Path *string `json:"path,omitempty"`
+}
