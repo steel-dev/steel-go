@@ -1524,111 +1524,11 @@ const (
 	CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationStateVi CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationState = "VI"
 )
 
-type ProfileListResponseProfilesItemStatus string
-
-const (
-	ProfileListResponseProfilesItemStatusUploading ProfileListResponseProfilesItemStatus = "UPLOADING"
-	ProfileListResponseProfilesItemStatusReady     ProfileListResponseProfilesItemStatus = "READY"
-	ProfileListResponseProfilesItemStatusFailed    ProfileListResponseProfilesItemStatus = "FAILED"
-)
-
-type SessionContextResponseCookiesItemPriority string
-
-const (
-	SessionContextResponseCookiesItemPriorityLow    SessionContextResponseCookiesItemPriority = "Low"
-	SessionContextResponseCookiesItemPriorityMedium SessionContextResponseCookiesItemPriority = "Medium"
-	SessionContextResponseCookiesItemPriorityHigh   SessionContextResponseCookiesItemPriority = "High"
-)
-
-type SessionContextResponseCookiesItemSameSite string
-
-const (
-	SessionContextResponseCookiesItemSameSiteStrict SessionContextResponseCookiesItemSameSite = "Strict"
-	SessionContextResponseCookiesItemSameSiteLax    SessionContextResponseCookiesItemSameSite = "Lax"
-	SessionContextResponseCookiesItemSameSiteNone   SessionContextResponseCookiesItemSameSite = "None"
-)
-
-type SessionContextResponseCookiesItemSourceScheme string
-
-const (
-	SessionContextResponseCookiesItemSourceSchemeUnset     SessionContextResponseCookiesItemSourceScheme = "Unset"
-	SessionContextResponseCookiesItemSourceSchemeNonSecure SessionContextResponseCookiesItemSourceScheme = "NonSecure"
-	SessionContextResponseCookiesItemSourceSchemeSecure    SessionContextResponseCookiesItemSourceScheme = "Secure"
-)
-
 type SessionCostResponseUsageBrowserUnit string
 
 const (
 	SessionCostResponseUsageBrowserUnitMinute SessionCostResponseUsageBrowserUnit = "minute"
 	SessionCostResponseUsageBrowserUnitSecond SessionCostResponseUsageBrowserUnit = "second"
-)
-
-type SessionResponseDeviceConfigDevice string
-
-const (
-	SessionResponseDeviceConfigDeviceDesktop SessionResponseDeviceConfigDevice = "desktop"
-	SessionResponseDeviceConfigDeviceMobile  SessionResponseDeviceConfigDevice = "mobile"
-)
-
-type SessionsResponseSessionsItemDeviceConfigDevice string
-
-const (
-	SessionsResponseSessionsItemDeviceConfigDeviceDesktop SessionsResponseSessionsItemDeviceConfigDevice = "desktop"
-	SessionsResponseSessionsItemDeviceConfigDeviceMobile  SessionsResponseSessionsItemDeviceConfigDevice = "mobile"
-)
-
-type SessionsResponseSessionsItemProxySource string
-
-const (
-	SessionsResponseSessionsItemProxySourceSteel    SessionsResponseSessionsItemProxySource = "steel"
-	SessionsResponseSessionsItemProxySourceExternal SessionsResponseSessionsItemProxySource = "external"
-)
-
-type SessionsResponseSessionsItemRegion string
-
-const (
-	SessionsResponseSessionsItemRegionLax         SessionsResponseSessionsItemRegion = "lax"
-	SessionsResponseSessionsItemRegionOrd         SessionsResponseSessionsItemRegion = "ord"
-	SessionsResponseSessionsItemRegionIad         SessionsResponseSessionsItemRegion = "iad"
-	SessionsResponseSessionsItemRegionScl         SessionsResponseSessionsItemRegion = "scl"
-	SessionsResponseSessionsItemRegionFra         SessionsResponseSessionsItemRegion = "fra"
-	SessionsResponseSessionsItemRegionNrt         SessionsResponseSessionsItemRegion = "nrt"
-	SessionsResponseSessionsItemRegionUsEast      SessionsResponseSessionsItemRegion = "us-east"
-	SessionsResponseSessionsItemRegionUsWest      SessionsResponseSessionsItemRegion = "us-west"
-	SessionsResponseSessionsItemRegionUsCentral   SessionsResponseSessionsItemRegion = "us-central"
-	SessionsResponseSessionsItemRegionEuWest      SessionsResponseSessionsItemRegion = "eu-west"
-	SessionsResponseSessionsItemRegionEuCentral   SessionsResponseSessionsItemRegion = "eu-central"
-	SessionsResponseSessionsItemRegionApNortheast SessionsResponseSessionsItemRegion = "ap-northeast"
-	SessionsResponseSessionsItemRegionApSoutheast SessionsResponseSessionsItemRegion = "ap-southeast"
-	SessionsResponseSessionsItemRegionSaEast      SessionsResponseSessionsItemRegion = "sa-east"
-)
-
-type SessionsResponseSessionsItemReleaseReason string
-
-const (
-	SessionsResponseSessionsItemReleaseReasonUserRequested     SessionsResponseSessionsItemReleaseReason = "user_requested"
-	SessionsResponseSessionsItemReleaseReasonTimeout           SessionsResponseSessionsItemReleaseReason = "timeout"
-	SessionsResponseSessionsItemReleaseReasonInactivityTimeout SessionsResponseSessionsItemReleaseReason = "inactivity_timeout"
-	SessionsResponseSessionsItemReleaseReasonCreationTimeout   SessionsResponseSessionsItemReleaseReason = "creation_timeout"
-	SessionsResponseSessionsItemReleaseReasonStartupFailed     SessionsResponseSessionsItemReleaseReason = "startup_failed"
-	SessionsResponseSessionsItemReleaseReasonBrowserClosed     SessionsResponseSessionsItemReleaseReason = "browser_closed"
-	SessionsResponseSessionsItemReleaseReasonBrowserCrashed    SessionsResponseSessionsItemReleaseReason = "browser_crashed"
-)
-
-type SessionsResponseSessionsItemStatus string
-
-const (
-	SessionsResponseSessionsItemStatusLive     SessionsResponseSessionsItemStatus = "live"
-	SessionsResponseSessionsItemStatusReleased SessionsResponseSessionsItemStatus = "released"
-	SessionsResponseSessionsItemStatusFailed   SessionsResponseSessionsItemStatus = "failed"
-)
-
-type GetSessionsStatus string
-
-const (
-	GetSessionsStatusLive     GetSessionsStatus = "live"
-	GetSessionsStatusReleased GetSessionsStatus = "released"
-	GetSessionsStatusFailed   GetSessionsStatus = "failed"
 )
 
 // ErrorResponse An error response from the API
@@ -1664,7 +1564,7 @@ type File struct {
 	// Path to the file in the storage system
 	Path string `json:"path" api:"required"`
 	// Size of the file in bytes
-	Size float64  `json:"size" api:"required"`
+	Size int64    `json:"size" api:"required"`
 	JSON fileJSON `json:"-"`
 }
 
@@ -1712,7 +1612,7 @@ type ClientPdfParams struct {
 	// Project to execute the PDF generation in.
 	ProjectID param.Field[string] `json:"projectId"`
 	// The desired region for the action to be performed in
-	Region param.Field[interface{}] `json:"region"`
+	Region param.Field[string] `json:"region"`
 	// URL of the webpage to convert to PDF
 	URL param.Field[string] `json:"url" api:"required"`
 	// Use a Steel-provided residential proxy for generating the PDF
@@ -1754,7 +1654,7 @@ type ClientScrapeParams struct {
 	// Project to execute the scrape in.
 	ProjectID param.Field[string] `json:"projectId"`
 	// The desired region for the action to be performed in
-	Region param.Field[interface{}] `json:"region"`
+	Region param.Field[string] `json:"region"`
 	// Include a screenshot in the response
 	Screenshot param.Field[bool] `json:"screenshot"`
 	// URL of the webpage to scrape
@@ -1804,7 +1704,7 @@ type ClientScreenshotParams struct {
 	// Project to execute the screenshot in.
 	ProjectID param.Field[string] `json:"projectId"`
 	// The desired region for the action to be performed in
-	Region param.Field[interface{}] `json:"region"`
+	Region param.Field[string] `json:"region"`
 	// URL of the webpage to capture
 	URL param.Field[string] `json:"url" api:"required"`
 	// Use a Steel-provided residential proxy for capturing the screenshot
@@ -1867,7 +1767,7 @@ type FileslistData struct {
 	// Path to the file in the storage system
 	Path string `json:"path" api:"required"`
 	// Size of the file in bytes
-	Size float64           `json:"size" api:"required"`
+	Size int64             `json:"size" api:"required"`
 	JSON fileslistDataJSON `json:"-"`
 }
 
@@ -2110,44 +2010,40 @@ func (u SessionComputerParams) MarshalJSON() ([]byte, error) {
 	return []byte("null"), nil
 }
 
-func (u *SessionComputerParams) UnmarshalJSON(data []byte) error {
-	var disc struct {
-		Action string `json:"action"`
-	}
-	if err := json.Unmarshal(data, &disc); err != nil {
-		return err
-	}
-	u.Action = disc.Action
-	switch disc.Action {
-	case "move_mouse":
-		u.ComputerActionRequestMoveMouse = &ComputerActionRequestMoveMouse{}
-		return json.Unmarshal(data, u.ComputerActionRequestMoveMouse)
-	case "click_mouse":
-		u.ComputerActionRequestClickMouse = &ComputerActionRequestClickMouse{}
-		return json.Unmarshal(data, u.ComputerActionRequestClickMouse)
-	case "drag_mouse":
-		u.ComputerActionRequestDragMouse = &ComputerActionRequestDragMouse{}
-		return json.Unmarshal(data, u.ComputerActionRequestDragMouse)
-	case "scroll":
-		u.ComputerActionRequestScroll = &ComputerActionRequestScroll{}
-		return json.Unmarshal(data, u.ComputerActionRequestScroll)
-	case "press_key":
-		u.ComputerActionRequestPressKey = &ComputerActionRequestPressKey{}
-		return json.Unmarshal(data, u.ComputerActionRequestPressKey)
-	case "type_text":
-		u.ComputerActionRequestTypeText = &ComputerActionRequestTypeText{}
-		return json.Unmarshal(data, u.ComputerActionRequestTypeText)
-	case "wait":
-		u.ComputerActionRequestWait = &ComputerActionRequestWait{}
-		return json.Unmarshal(data, u.ComputerActionRequestWait)
-	case "take_screenshot":
-		u.ComputerActionRequestTakeScreenshot = &ComputerActionRequestTakeScreenshot{}
-		return json.Unmarshal(data, u.ComputerActionRequestTakeScreenshot)
-	case "get_cursor_position":
-		u.ComputerActionRequestGetCursorPosition = &ComputerActionRequestGetCursorPosition{}
-		return json.Unmarshal(data, u.ComputerActionRequestGetCursorPosition)
-	}
-	return nil
+func NewSessionComputerParamsMoveMouse(v ComputerActionRequestMoveMouse) SessionComputerParams {
+	return SessionComputerParams{Action: "move_mouse", ComputerActionRequestMoveMouse: &v}
+}
+
+func NewSessionComputerParamsClickMouse(v ComputerActionRequestClickMouse) SessionComputerParams {
+	return SessionComputerParams{Action: "click_mouse", ComputerActionRequestClickMouse: &v}
+}
+
+func NewSessionComputerParamsDragMouse(v ComputerActionRequestDragMouse) SessionComputerParams {
+	return SessionComputerParams{Action: "drag_mouse", ComputerActionRequestDragMouse: &v}
+}
+
+func NewSessionComputerParamsScroll(v ComputerActionRequestScroll) SessionComputerParams {
+	return SessionComputerParams{Action: "scroll", ComputerActionRequestScroll: &v}
+}
+
+func NewSessionComputerParamsPressKey(v ComputerActionRequestPressKey) SessionComputerParams {
+	return SessionComputerParams{Action: "press_key", ComputerActionRequestPressKey: &v}
+}
+
+func NewSessionComputerParamsTypeText(v ComputerActionRequestTypeText) SessionComputerParams {
+	return SessionComputerParams{Action: "type_text", ComputerActionRequestTypeText: &v}
+}
+
+func NewSessionComputerParamsWait(v ComputerActionRequestWait) SessionComputerParams {
+	return SessionComputerParams{Action: "wait", ComputerActionRequestWait: &v}
+}
+
+func NewSessionComputerParamsTakeScreenshot(v ComputerActionRequestTakeScreenshot) SessionComputerParams {
+	return SessionComputerParams{Action: "take_screenshot", ComputerActionRequestTakeScreenshot: &v}
+}
+
+func NewSessionComputerParamsGetCursorPosition(v ComputerActionRequestGetCursorPosition) SessionComputerParams {
+	return SessionComputerParams{Action: "get_cursor_position", ComputerActionRequestGetCursorPosition: &v}
 }
 
 type SessionCreateParamsOptimizeBandwidth2 struct {
@@ -2163,24 +2059,4 @@ func (u SessionCreateParamsOptimizeBandwidth2) MarshalJSON() ([]byte, error) {
 		return json.Marshal(u.OfSessionCreateParamsOptimizeBandwidthUnionMember1)
 	}
 	return []byte("null"), nil
-}
-
-func (u *SessionCreateParamsOptimizeBandwidth2) UnmarshalJSON(data []byte) error {
-	var tok byte
-	for _, b := range data {
-		if b == ' ' || b == '\t' || b == '\n' || b == '\r' {
-			continue
-		}
-		tok = b
-		break
-	}
-	switch {
-	case tok == 't' || tok == 'f':
-		u.OfBool = new(bool)
-		return json.Unmarshal(data, u.OfBool)
-	case tok == '{':
-		u.OfSessionCreateParamsOptimizeBandwidthUnionMember1 = new(SessionCreateParamsOptimizeBandwidthUnionMember1)
-		return json.Unmarshal(data, u.OfSessionCreateParamsOptimizeBandwidthUnionMember1)
-	}
-	return nil
 }

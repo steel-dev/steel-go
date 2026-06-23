@@ -15,3 +15,5 @@ func String(value string) param.Field[string] { return F(value) }
 func Float(value float64) param.Field[float64] { return F(value) }
 
 func Bool(value bool) param.Field[bool] { return F(value) }
+
+func Ptr[T any](value T) *T { return &value }

@@ -9,7 +9,15 @@ import (
 
 func TestExtensionsList(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/extensions" {
+			t.Errorf("path = %s, want /v1/extensions", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -21,7 +29,15 @@ func TestExtensionsList(t *testing.T) {
 
 func TestExtensionsUpload(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/extensions" {
+			t.Errorf("path = %s, want /v1/extensions", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -33,7 +49,15 @@ func TestExtensionsUpload(t *testing.T) {
 
 func TestExtensionsDeleteAll(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "DELETE" {
+			t.Errorf("method = %s, want DELETE", r.Method)
+		}
+		if r.URL.Path != "/v1/extensions" {
+			t.Errorf("path = %s, want /v1/extensions", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -45,6 +69,12 @@ func TestExtensionsDeleteAll(t *testing.T) {
 
 func TestExtensionsDownload(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/extensions/id" {
+			t.Errorf("path = %s, want /v1/extensions/id", r.URL.Path)
+		}
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer srv.Close()
@@ -57,7 +87,15 @@ func TestExtensionsDownload(t *testing.T) {
 
 func TestExtensionsUpdate(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PUT" {
+			t.Errorf("method = %s, want PUT", r.Method)
+		}
+		if r.URL.Path != "/v1/extensions/id" {
+			t.Errorf("path = %s, want /v1/extensions/id", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -69,7 +107,15 @@ func TestExtensionsUpdate(t *testing.T) {
 
 func TestExtensionsDelete(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "DELETE" {
+			t.Errorf("method = %s, want DELETE", r.Method)
+		}
+		if r.URL.Path != "/v1/extensions/id" {
+			t.Errorf("path = %s, want /v1/extensions/id", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)

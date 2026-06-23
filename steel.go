@@ -30,6 +30,7 @@ type Client struct {
 	apiKey        string
 	baseURL       string
 	httpClient    *http.Client
+	timeout       *time.Duration
 	maxRetries    int
 	defaultHeader http.Header
 	defaultQuery  url.Values
@@ -48,7 +49,7 @@ func WithMaxRetries(maxRetries int) Option {
 }
 
 func WithTimeout(timeout time.Duration) Option {
-	return func(c *Client) { c.httpClient.Timeout = timeout }
+	return func(c *Client) { c.timeout = &timeout }
 }
 
 func WithHTTPClient(httpClient *http.Client) Option {
@@ -187,6 +188,11 @@ func newClient(apiKey, baseURL string, opts []Option) *Client {
 	c.Sessions = &SessionService{client: c, Captchas: &SessionServiceCaptchas{client: c}, Files: &SessionServiceFiles{client: c}}
 	for _, opt := range opts {
 		opt(c)
+	}
+	if c.timeout != nil {
+		client := *c.httpClient
+		client.Timeout = *c.timeout
+		c.httpClient = &client
 	}
 	return c
 }
@@ -400,6 +406,14 @@ func sleepCtx(ctx context.Context, d time.Duration) {
 	}
 }
 
+func encodePath(p string) string {
+	segs := strings.Split(p, "/")
+	for i, s := range segs {
+		segs[i] = url.PathEscape(s)
+	}
+	return strings.Join(segs, "/")
+}
+
 func newRetryKey(method string) string {
 	if method == "GET" {
 		return ""
@@ -413,9 +427,9 @@ func newRetryKey(method string) string {
 }
 
 func setRuntimeHeaders(req *http.Request, idempotencyKey string) {
-	req.Header.Set("user-agent", "steel-go/0.1.0")
+	req.Header.Set("user-agent", "steel-go/0.1.2")
 	req.Header.Set("x-steel-lang", "go")
-	req.Header.Set("x-steel-package-version", "0.1.0")
+	req.Header.Set("x-steel-package-version", "0.1.2")
 	if idempotencyKey != "" {
 		req.Header.Set("idempotency-key", idempotencyKey)
 	}
@@ -493,7 +507,7 @@ func (c *Client) do(ctx context.Context, method, path string, body, out interfac
 	}
 }
 
-func (c *Client) doRaw(ctx context.Context, method, path string, body interface{}, opts ...RequestOption) ([]byte, error) {
+func (c *Client) doRawStream(ctx context.Context, method, path string, body interface{}, opts ...RequestOption) (io.ReadCloser, error) {
 	cfg := c.newRequestConfig(opts)
 	if cfg.timeout != nil {
 		var cancel context.CancelFunc
@@ -537,9 +551,7 @@ func (c *Client) doRaw(ctx context.Context, method, path string, body interface{
 		}
 
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			data, err := io.ReadAll(resp.Body)
-			cfg.capture(resp, data)
-			return data, err
+			return resp.Body, nil
 		}
 
 		if shouldRetryResponse(resp) && attempt < maxRetries {

@@ -9,7 +9,15 @@ import (
 
 func TestProfilesList(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/profiles" {
+			t.Errorf("path = %s, want /v1/profiles", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -21,7 +29,15 @@ func TestProfilesList(t *testing.T) {
 
 func TestProfilesCreate(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/profiles" {
+			t.Errorf("path = %s, want /v1/profiles", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -33,7 +49,15 @@ func TestProfilesCreate(t *testing.T) {
 
 func TestProfilesGet(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/profiles/id" {
+			t.Errorf("path = %s, want /v1/profiles/id", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -45,7 +69,15 @@ func TestProfilesGet(t *testing.T) {
 
 func TestProfilesUpdate(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PATCH" {
+			t.Errorf("method = %s, want PATCH", r.Method)
+		}
+		if r.URL.Path != "/v1/profiles/id" {
+			t.Errorf("path = %s, want /v1/profiles/id", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)

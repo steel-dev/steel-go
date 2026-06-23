@@ -3,6 +3,7 @@ package steel
 import (
 	"context"
 	"fmt"
+	"io"
 )
 
 type FileService struct {
@@ -30,18 +31,18 @@ func (r *FileService) Upload(ctx context.Context, body FileUploadParams, opts ..
 }
 
 // Download a global file
-func (r *FileService) Download(ctx context.Context, path string, opts ...RequestOption) ([]byte, error) {
-	reqPath := fmt.Sprintf("/v1/files/%s", path)
-	data, err := r.client.doRaw(ctx, "GET", reqPath, nil, opts...)
+func (r *FileService) Download(ctx context.Context, path string, opts ...RequestOption) (io.ReadCloser, error) {
+	reqPath := fmt.Sprintf("/v1/files/%s", encodePath(path))
+	stream, err := r.client.doRawStream(ctx, "GET", reqPath, nil, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return stream, nil
 }
 
 // Delete a global file
 func (r *FileService) Delete(ctx context.Context, path string, opts ...RequestOption) error {
-	reqPath := fmt.Sprintf("/v1/files/%s", path)
+	reqPath := fmt.Sprintf("/v1/files/%s", encodePath(path))
 	return r.client.do(ctx, "DELETE", reqPath, nil, nil, opts...)
 }
 

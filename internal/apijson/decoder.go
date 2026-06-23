@@ -2,7 +2,6 @@ package apijson
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -143,15 +142,9 @@ func (d *decoderBuilder) newTypeDecoder(t reflect.Type) decoderFunc {
 		return unmarshalerDecoder
 	}
 	if !d.root && reflect.PointerTo(t).Implements(reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()) {
-		if _, ok := unionVariants[t]; !ok {
-			return indirectUnmarshalerDecoder
-		}
+		return indirectUnmarshalerDecoder
 	}
 	d.root = false
-
-	if _, ok := unionRegistry[t]; ok {
-		return d.newUnionDecoder(t)
-	}
 
 	switch t.Kind() {
 	case reflect.Pointer:
@@ -192,80 +185,6 @@ func (d *decoderBuilder) newTypeDecoder(t reflect.Type) decoderFunc {
 		}
 	default:
 		return d.newPrimitiveTypeDecoder(t)
-	}
-}
-
-// newUnionDecoder returns a decoderFunc that deserializes into a union using an
-// algorithm roughly similar to Pydantic's [smart algorithm].
-//
-// Conceptually this is equivalent to choosing the best schema based on how 'exact'
-// the deserialization is for each of the schemas.
-//
-// If there is a tie in the level of exactness, then the tie is broken
-// left-to-right.
-//
-// [smart algorithm]: https://docs.pydantic.dev/latest/concepts/unions/#smart-mode
-func (d *decoderBuilder) newUnionDecoder(t reflect.Type) decoderFunc {
-	unionEntry, ok := unionRegistry[t]
-	if !ok {
-		panic("apijson: couldn't find union of type " + t.String() + " in union registry")
-	}
-	decoders := []decoderFunc{}
-	for _, variant := range unionEntry.variants {
-		decoder := d.typeDecoder(variant.Type)
-		decoders = append(decoders, decoder)
-	}
-	return func(n gjson.Result, v reflect.Value, state *decoderState) error {
-		// If there is a discriminator match, circumvent the exactness logic entirely
-		for idx, variant := range unionEntry.variants {
-			decoder := decoders[idx]
-			if variant.TypeFilter != n.Type {
-				continue
-			}
-
-			if len(unionEntry.discriminatorKey) != 0 {
-				discriminatorValue := n.Get(EscapeSJSONKey(unionEntry.discriminatorKey)).Value()
-				if discriminatorValue == variant.DiscriminatorValue {
-					inner := reflect.New(variant.Type).Elem()
-					err := decoder(n, inner, state)
-					v.Set(inner)
-					return err
-				}
-			}
-		}
-
-		// Set bestExactness to worse than loose
-		bestExactness := loose - 1
-		for idx, variant := range unionEntry.variants {
-			decoder := decoders[idx]
-			if variant.TypeFilter != n.Type {
-				continue
-			}
-			sub := decoderState{strict: state.strict, exactness: exact}
-			inner := reflect.New(variant.Type).Elem()
-			err := decoder(n, inner, &sub)
-			if err != nil {
-				continue
-			}
-			if sub.exactness == exact {
-				v.Set(inner)
-				return nil
-			}
-			if sub.exactness > bestExactness {
-				v.Set(inner)
-				bestExactness = sub.exactness
-			}
-		}
-
-		if bestExactness < loose {
-			return errors.New("apijson: was not able to coerce type as union")
-		}
-
-		if guardStrict(state, bestExactness != exact) {
-			return errors.New("apijson: was not able to coerce type as union strictly")
-		}
-
-		return nil
 	}
 }
 

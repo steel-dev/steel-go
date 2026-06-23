@@ -9,7 +9,15 @@ import (
 
 func TestSessionsList(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions" {
+			t.Errorf("path = %s, want /v1/sessions", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -19,9 +27,50 @@ func TestSessionsList(t *testing.T) {
 	}
 }
 
+func TestSessionsListAutoPaging(t *testing.T) {
+	var calls int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if calls == 0 {
+			_, _ = w.Write([]byte(`{"sessions":[{}],"nextCursor":"c2"}`))
+		} else {
+			_, _ = w.Write([]byte(`{"sessions":[{}]}`))
+		}
+		calls++
+	}))
+	defer srv.Close()
+	client := NewClientWithBaseURL("test-key", srv.URL)
+	iter := client.Sessions.ListAutoPaging(context.Background(), SessionListParams{})
+	count := 0
+	for iter.Next() {
+		_ = iter.Current()
+		count++
+		if count > 10 {
+			t.Fatal("pagination did not terminate")
+		}
+	}
+	if err := iter.Err(); err != nil {
+		t.Fatalf("AutoPaging error: %v", err)
+	}
+	if count != 2 {
+		t.Errorf("items = %d, want 2", count)
+	}
+	if calls != 2 {
+		t.Errorf("requests = %d, want 2", calls)
+	}
+}
+
 func TestSessionsCreate(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions" {
+			t.Errorf("path = %s, want /v1/sessions", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -33,7 +82,15 @@ func TestSessionsCreate(t *testing.T) {
 
 func TestSessionsReleaseAll(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/release" {
+			t.Errorf("path = %s, want /v1/sessions/release", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -45,7 +102,15 @@ func TestSessionsReleaseAll(t *testing.T) {
 
 func TestSessionsRetrieve(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id" {
+			t.Errorf("path = %s, want /v1/sessions/id", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -57,7 +122,15 @@ func TestSessionsRetrieve(t *testing.T) {
 
 func TestSessionsAgentTraces(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/agent-traces" {
+			t.Errorf("path = %s, want /v1/sessions/id/agent-traces", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -69,7 +142,15 @@ func TestSessionsAgentTraces(t *testing.T) {
 
 func TestSessionsContext(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/context" {
+			t.Errorf("path = %s, want /v1/sessions/id/context", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -81,7 +162,15 @@ func TestSessionsContext(t *testing.T) {
 
 func TestSessionsCost(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/cost" {
+			t.Errorf("path = %s, want /v1/sessions/id/cost", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -93,7 +182,15 @@ func TestSessionsCost(t *testing.T) {
 
 func TestSessionsEvents(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/events" {
+			t.Errorf("path = %s, want /v1/sessions/id/events", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("[]"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -105,7 +202,15 @@ func TestSessionsEvents(t *testing.T) {
 
 func TestSessionsLiveDetails(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/live-details" {
+			t.Errorf("path = %s, want /v1/sessions/id/live-details", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -117,7 +222,15 @@ func TestSessionsLiveDetails(t *testing.T) {
 
 func TestSessionsRelease(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/release" {
+			t.Errorf("path = %s, want /v1/sessions/id/release", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -129,7 +242,15 @@ func TestSessionsRelease(t *testing.T) {
 
 func TestSessionsComputer(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/computer" {
+			t.Errorf("path = %s, want /v1/sessions/id/computer", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -141,7 +262,15 @@ func TestSessionsComputer(t *testing.T) {
 
 func TestSessionsCaptchasSolve(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/captchas/solve" {
+			t.Errorf("path = %s, want /v1/sessions/id/captchas/solve", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -153,7 +282,15 @@ func TestSessionsCaptchasSolve(t *testing.T) {
 
 func TestSessionsCaptchasSolveImage(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/captchas/solve-image" {
+			t.Errorf("path = %s, want /v1/sessions/id/captchas/solve-image", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -165,7 +302,15 @@ func TestSessionsCaptchasSolveImage(t *testing.T) {
 
 func TestSessionsCaptchasStatus(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/captchas/status" {
+			t.Errorf("path = %s, want /v1/sessions/id/captchas/status", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("[]"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -177,7 +322,15 @@ func TestSessionsCaptchasStatus(t *testing.T) {
 
 func TestSessionsFilesList(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/files" {
+			t.Errorf("path = %s, want /v1/sessions/id/files", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -189,11 +342,19 @@ func TestSessionsFilesList(t *testing.T) {
 
 func TestSessionsFilesUpload(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/files" {
+			t.Errorf("path = %s, want /v1/sessions/id/files", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
-	_, err := client.Sessions.Files.Upload(context.Background(), "id", FileUploadParams2{})
+	_, err := client.Sessions.Files.Upload(context.Background(), "id", SessionFileUploadParams{})
 	if err != nil {
 		t.Fatalf("client.Sessions.Files.Upload: %v", err)
 	}
@@ -201,6 +362,12 @@ func TestSessionsFilesUpload(t *testing.T) {
 
 func TestSessionsFilesDeleteAll(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "DELETE" {
+			t.Errorf("method = %s, want DELETE", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/files" {
+			t.Errorf("path = %s, want /v1/sessions/id/files", r.URL.Path)
+		}
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer srv.Close()
@@ -213,6 +380,12 @@ func TestSessionsFilesDeleteAll(t *testing.T) {
 
 func TestSessionsFilesDownloadArchive(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/files.zip" {
+			t.Errorf("path = %s, want /v1/sessions/id/files.zip", r.URL.Path)
+		}
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer srv.Close()
@@ -225,6 +398,12 @@ func TestSessionsFilesDownloadArchive(t *testing.T) {
 
 func TestSessionsFilesDownload(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/files/id" {
+			t.Errorf("path = %s, want /v1/sessions/id/files/id", r.URL.Path)
+		}
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer srv.Close()
@@ -237,6 +416,12 @@ func TestSessionsFilesDownload(t *testing.T) {
 
 func TestSessionsFilesDelete(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "DELETE" {
+			t.Errorf("method = %s, want DELETE", r.Method)
+		}
+		if r.URL.Path != "/v1/sessions/id/files/id" {
+			t.Errorf("path = %s, want /v1/sessions/id/files/id", r.URL.Path)
+		}
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer srv.Close()

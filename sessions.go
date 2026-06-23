@@ -2,9 +2,11 @@ package steel
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/steel-dev/steel-go/internal/apijson"
 	"github.com/steel-dev/steel-go/internal/param"
+	"io"
 	"net/url"
 	"strconv"
 	"time"
@@ -41,13 +43,15 @@ func (r *SessionService) List(ctx context.Context, params SessionListParams, opt
 		if encoded := query.Encode(); encoded != "" {
 			path += "?" + encoded
 		}
-		var out CursorPage[SessionslistSession]
-		if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
+		var raw map[string]json.RawMessage
+		if err := r.client.do(ctx, "GET", path, nil, &raw, opts...); err != nil {
 			return nil, err
 		}
-		out.fetch = fetch
-		out.ctx = ctx
-		out.nextCursor = nextCursor
+		items, cursorVal, hasMore, derr := decodeCursorPage[SessionslistSession](raw, "sessions", "nextCursor", "")
+		if derr != nil {
+			return nil, derr
+		}
+		out := CursorPage[SessionslistSession]{Items: items, cursor: cursorVal, hasMore: hasMore, fetch: fetch, ctx: ctx, nextCursor: nextCursor}
 		return &out, nil
 	}
 	return fetch(ctx, "")
@@ -103,10 +107,10 @@ func (r *SessionService) AgentTraces(ctx context.Context, id string, params Sess
 		query.Set("namespace", *params.Namespace)
 	}
 	if params.StartTime != nil {
-		query.Set("startTime", fmt.Sprintf("%v", *params.StartTime))
+		query.Set("startTime", (*params.StartTime).Format(time.RFC3339))
 	}
 	if params.EndTime != nil {
-		query.Set("endTime", fmt.Sprintf("%v", *params.EndTime))
+		query.Set("endTime", (*params.EndTime).Format(time.RFC3339))
 	}
 	if params.EventTypes != nil {
 		for _, __v := range *params.EventTypes {
@@ -245,7 +249,7 @@ func (r *SessionServiceFiles) List(ctx context.Context, sessionID string, opts .
 }
 
 // Upload a file
-func (r *SessionServiceFiles) Upload(ctx context.Context, sessionID string, body FileUploadParams2, opts ...RequestOption) (*File, error) {
+func (r *SessionServiceFiles) Upload(ctx context.Context, sessionID string, body SessionFileUploadParams, opts ...RequestOption) (*File, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/files", url.PathEscape(sessionID))
 	var out File
 	if err := r.client.doMultipart(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -261,28 +265,28 @@ func (r *SessionServiceFiles) DeleteAll(ctx context.Context, sessionID string, o
 }
 
 // Download archive
-func (r *SessionServiceFiles) DownloadArchive(ctx context.Context, sessionID string, opts ...RequestOption) ([]byte, error) {
+func (r *SessionServiceFiles) DownloadArchive(ctx context.Context, sessionID string, opts ...RequestOption) (io.ReadCloser, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/files.zip", url.PathEscape(sessionID))
-	data, err := r.client.doRaw(ctx, "GET", path, nil, opts...)
+	stream, err := r.client.doRawStream(ctx, "GET", path, nil, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return stream, nil
 }
 
 // Download a file
-func (r *SessionServiceFiles) Download(ctx context.Context, sessionID string, path string, opts ...RequestOption) ([]byte, error) {
-	reqPath := fmt.Sprintf("/v1/sessions/%s/files/%s", url.PathEscape(sessionID), path)
-	data, err := r.client.doRaw(ctx, "GET", reqPath, nil, opts...)
+func (r *SessionServiceFiles) Download(ctx context.Context, sessionID string, path string, opts ...RequestOption) (io.ReadCloser, error) {
+	reqPath := fmt.Sprintf("/v1/sessions/%s/files/%s", url.PathEscape(sessionID), encodePath(path))
+	stream, err := r.client.doRawStream(ctx, "GET", reqPath, nil, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return stream, nil
 }
 
 // Delete a file
 func (r *SessionServiceFiles) Delete(ctx context.Context, sessionID string, path string, opts ...RequestOption) error {
-	reqPath := fmt.Sprintf("/v1/sessions/%s/files/%s", url.PathEscape(sessionID), path)
+	reqPath := fmt.Sprintf("/v1/sessions/%s/files/%s", url.PathEscape(sessionID), encodePath(path))
 	return r.client.do(ctx, "DELETE", reqPath, nil, nil, opts...)
 }
 
@@ -381,7 +385,7 @@ type SessionCreateParams struct {
 	// Custom proxy URL for the browser session. Overrides useProxy, disabling Steel-provided proxies in favor of your specified proxy. Format: http(s)://username:password@hostname:port
 	ProxyURL param.Field[string] `json:"proxyUrl"`
 	// The desired region for the session. Available: us-east, us-west, us-central, eu-west, eu-central, ap-northeast, ap-southeast, sa-east. Legacy codes (iad, lax, ord) are also accepted.
-	Region param.Field[interface{}] `json:"region"`
+	Region param.Field[string] `json:"region"`
 	// Session context data to be used in the created session. Sessions will start with an empty context by default.
 	SessionContext param.Field[SessionCreateParamsSessionContext] `json:"sessionContext"`
 	// Optional custom UUID for the session
@@ -404,7 +408,7 @@ func (r SessionCreateParams) MarshalJSON() (data []byte, err error) {
 type SessionAgentTracesResponse struct {
 	Events  []map[string]interface{}       `json:"events" api:"required"`
 	HasMore bool                           `json:"hasMore" api:"required"`
-	Total   float64                        `json:"total" api:"required"`
+	Total   int64                          `json:"total" api:"required"`
 	JSON    sessionAgentTracesResponseJSON `json:"-"`
 }
 
@@ -748,7 +752,7 @@ func (r captchaSolveImageResponseJSON) RawJSON() string {
 	return r.raw
 }
 
-type FileUploadParams2 struct {
+type SessionFileUploadParams struct {
 	// The file to upload (binary) or URL string to download from
 	File FileUpload `json:"file"`
 	// Path to the file in the storage system
@@ -1006,7 +1010,7 @@ type SessionCreateParamsSessionContextCookie struct {
 	// Whether the cookie is a session cookie
 	Session param.Field[bool] `json:"session"`
 	// The size of the cookie
-	Size param.Field[float64] `json:"size"`
+	Size param.Field[int64] `json:"size"`
 	// The source port of the cookie
 	SourcePort param.Field[float64] `json:"sourcePort"`
 	// The source scheme of the cookie
@@ -1027,7 +1031,7 @@ type SessionCreateParamsSessionContextIndexedDBDataRecordBlobFile struct {
 	LastModified param.Field[time.Time] `json:"lastModified"`
 	MimeType     param.Field[string]    `json:"mimeType" api:"required"`
 	Path         param.Field[string]    `json:"path"`
-	Size         param.Field[float64]   `json:"size" api:"required"`
+	Size         param.Field[int64]     `json:"size" api:"required"`
 }
 
 func (r SessionCreateParamsSessionContextIndexedDBDataRecordBlobFile) MarshalJSON() (data []byte, err error) {
@@ -1167,21 +1171,21 @@ type SessionContextCookie struct {
 	// The path of the cookie
 	Path string `json:"path"`
 	// The priority of the cookie
-	Priority SessionContextResponseCookiesItemPriority `json:"priority"`
+	Priority CreateSessionRequestSessionContextCookiesItemPriority `json:"priority"`
 	// Whether the cookie is a same party cookie
 	SameParty bool `json:"sameParty"`
 	// The same site attribute of the cookie
-	SameSite SessionContextResponseCookiesItemSameSite `json:"sameSite"`
+	SameSite CreateSessionRequestSessionContextCookiesItemSameSite `json:"sameSite"`
 	// Whether the cookie is secure
 	Secure bool `json:"secure"`
 	// Whether the cookie is a session cookie
 	Session bool `json:"session"`
 	// The size of the cookie
-	Size float64 `json:"size"`
+	Size int64 `json:"size"`
 	// The source port of the cookie
 	SourcePort float64 `json:"sourcePort"`
 	// The source scheme of the cookie
-	SourceScheme SessionContextResponseCookiesItemSourceScheme `json:"sourceScheme"`
+	SourceScheme CreateSessionRequestSessionContextCookiesItemSourceScheme `json:"sourceScheme"`
 	// The URL of the cookie
 	URL string `json:"url"`
 	// The value of the cookie
@@ -1225,7 +1229,7 @@ type SessionContextIndexedDBDataRecordBlobFile struct {
 	LastModified time.Time                                     `json:"lastModified"`
 	MimeType     string                                        `json:"mimeType" api:"required"`
 	Path         string                                        `json:"path"`
-	Size         float64                                       `json:"size" api:"required"`
+	Size         int64                                         `json:"size" api:"required"`
 	JSON         sessionContextIndexedDBDataRecordBlobFileJSON `json:"-"`
 }
 
@@ -1470,8 +1474,8 @@ func (r sessionDebugConfigJSON) RawJSON() string {
 
 // SessionDeviceConfig Device configuration for the session
 type SessionDeviceConfig struct {
-	Device SessionResponseDeviceConfigDevice `json:"device"`
-	JSON   sessionDeviceConfigJSON           `json:"-"`
+	Device CreateSessionRequestDeviceConfigDevice `json:"device"`
+	JSON   sessionDeviceConfigJSON                `json:"-"`
 }
 
 // sessionDeviceConfigJSON contains the JSON metadata for the struct [SessionDeviceConfig]
@@ -1598,8 +1602,8 @@ func (r sessionslistSessionDebugConfigJSON) RawJSON() string {
 
 // SessionslistSessionDeviceConfig Device configuration for the session
 type SessionslistSessionDeviceConfig struct {
-	Device SessionsResponseSessionsItemDeviceConfigDevice `json:"device"`
-	JSON   sessionslistSessionDeviceConfigJSON            `json:"-"`
+	Device CreateSessionRequestDeviceConfigDevice `json:"device"`
+	JSON   sessionslistSessionDeviceConfigJSON    `json:"-"`
 }
 
 // sessionslistSessionDeviceConfigJSON contains the JSON metadata for the struct [SessionslistSessionDeviceConfig]
@@ -1738,17 +1742,17 @@ type SessionslistSession struct {
 	// Amount of data transmitted through the proxy
 	ProxyBytesUsed int64 `json:"proxyBytesUsed" api:"required"`
 	// Source of the proxy used for the session
-	ProxySource SessionsResponseSessionsItemProxySource `json:"proxySource" api:"required"`
+	ProxySource SessionResponseProxySource `json:"proxySource" api:"required"`
 	// The region where the session was created.
-	Region SessionsResponseSessionsItemRegion `json:"region"`
+	Region SessionResponseRegion `json:"region"`
 	// Why the session reached a terminal state. Null while the session is live, or when the reason is unknown (e.g. sessions created before this was tracked). One of: user_requested (released via the API/SDK), timeout (hard `timeout` elapsed), inactivity_timeout (no activity for the configured window), creation_timeout (never started in time), startup_failed (could not be dispatched), browser_closed (the browser or agent closed itself — not a crash), browser_crashed (the browser crashed or its machine became unresponsive).
-	ReleaseReason SessionsResponseSessionsItemReleaseReason `json:"releaseReason"`
+	ReleaseReason SessionResponseReleaseReason `json:"releaseReason"`
 	// URL to view session details
 	SessionViewerURL string `json:"sessionViewerUrl" api:"required"`
 	// Indicates if captcha solving is enabled
 	SolveCaptcha bool `json:"solveCaptcha"`
 	// Status of the session
-	Status SessionsResponseSessionsItemStatus `json:"status" api:"required"`
+	Status SessionResponseStatus `json:"status" api:"required"`
 	// Stealth configuration for the session
 	StealthConfig SessionslistSessionStealthConfig `json:"stealthConfig"`
 	// Session timeout duration in milliseconds
@@ -1803,10 +1807,10 @@ func (r sessionslistSessionJSON) RawJSON() string {
 }
 
 type SessionListParams struct {
-	CursorID  *string            `json:"cursorId,omitempty"`
-	Limit     *int64             `json:"limit,omitempty"`
-	Status    *GetSessionsStatus `json:"status,omitempty"`
-	ProjectID *string            `json:"projectId,omitempty"`
+	CursorID  *string                `json:"cursorId,omitempty"`
+	Limit     *int64                 `json:"limit,omitempty"`
+	Status    *SessionResponseStatus `json:"status,omitempty"`
+	ProjectID *string                `json:"projectId,omitempty"`
 }
 
 type SessionReleaseAllQueryParams struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/steel-dev/steel-go/internal/apijson"
+	"io"
 	"net/url"
 )
 
@@ -42,13 +43,13 @@ func (r *ExtensionService) DeleteAll(ctx context.Context, opts ...RequestOption)
 }
 
 // Download extension
-func (r *ExtensionService) Download(ctx context.Context, extensionID string, opts ...RequestOption) ([]byte, error) {
+func (r *ExtensionService) Download(ctx context.Context, extensionID string, opts ...RequestOption) (io.ReadCloser, error) {
 	path := fmt.Sprintf("/v1/extensions/%s", url.PathEscape(extensionID))
-	data, err := r.client.doRaw(ctx, "GET", path, nil, opts...)
+	stream, err := r.client.doRawStream(ctx, "GET", path, nil, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return stream, nil
 }
 
 // Update extension
@@ -94,7 +95,7 @@ func (r extensionDeleteAllResponseJSON) RawJSON() string {
 // ExtensionListResponse Response containing a list of extensions for the organization
 type ExtensionListResponse struct {
 	// Total number of extensions
-	Count float64 `json:"count" api:"required"`
+	Count int64 `json:"count" api:"required"`
 	// List of extensions for the organization
 	Extensions []ExtensionListResponseExtension `json:"extensions" api:"required"`
 	JSON       extensionListResponseJSON        `json:"-"`

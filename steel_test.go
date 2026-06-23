@@ -9,7 +9,15 @@ import (
 
 func TestPdf(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/pdf" {
+			t.Errorf("path = %s, want /v1/pdf", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -21,7 +29,15 @@ func TestPdf(t *testing.T) {
 
 func TestScrape(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/scrape" {
+			t.Errorf("path = %s, want /v1/scrape", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)
@@ -33,7 +49,15 @@ func TestScrape(t *testing.T) {
 
 func TestScreenshot(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/screenshot" {
+			t.Errorf("path = %s, want /v1/screenshot", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 	client := NewClientWithBaseURL("test-key", srv.URL)

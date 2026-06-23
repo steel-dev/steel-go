@@ -142,7 +142,7 @@ type ProfileCreateParams struct {
 
 type ProfileListResponse struct {
 	// The total number of profiles
-	Count float64 `json:"count" api:"required"`
+	Count int64 `json:"count" api:"required"`
 	// The list of profiles
 	Profiles []ProfileListResponseProfile `json:"profiles" api:"required"`
 	JSON     profileListResponseJSON      `json:"-"`
@@ -1386,7 +1386,7 @@ type ProfileListResponseProfile struct {
 	// The last session ID associated with the profile
 	SourceSessionID string `json:"sourceSessionId" api:"required"`
 	// The status of the profile
-	Status ProfileListResponseProfilesItemStatus `json:"status" api:"required"`
+	Status ProfileStatus `json:"status" api:"required"`
 	// The date and time when the profile was last updated
 	UpdatedAt time.Time `json:"updatedAt" api:"required"`
 	// The proxy configuration associated with the profile
