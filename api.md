@@ -1,9 +1,5 @@
 # API reference
 
-## wellKnown
-
-- `GET /.well-known/jwks.json` — `client.WellKnown.List(context.Background())` → `WellknownListResponse`
-
 ## credentials
 
 - `GET /v1/credentials` — `client.Credentials.List(context.Background(), params)` → `CredentialListResponse`
@@ -46,14 +42,11 @@
 - `POST /v1/sessions` — `client.Sessions.Create(context.Background(), params)` → `Session`
 - `POST /v1/sessions/release` — `client.Sessions.ReleaseAll(context.Background(), params)` → `SessionReleaseAllResponse`
 - `GET /v1/sessions/{id}` — `client.Sessions.Retrieve(context.Background(), params)` → `Session`
-- `GET /v1/sessions/{id}/agent-logs` — `client.Sessions.AgentLogs(context.Background(), params)` → `SessionAgentLogsResponse`
 - `GET /v1/sessions/{id}/agent-traces` — `client.Sessions.AgentTraces(context.Background(), params)` → `SessionAgentTracesResponse`
 - `GET /v1/sessions/{id}/context` — `client.Sessions.Context(context.Background(), params)` → `SessionContext`
 - `GET /v1/sessions/{id}/cost` — `client.Sessions.Cost(context.Background(), params)` → `SessionCostResponse`
 - `GET /v1/sessions/{id}/events` — `client.Sessions.Events(context.Background(), params)` → `SessionEventsResponse`
-- `GET /v1/sessions/{id}/hls` — `client.Sessions.Hls(context.Background(), params)`
 - `GET /v1/sessions/{id}/live-details` — `client.Sessions.LiveDetails(context.Background(), params)` → `SessionLiveDetailsResponse`
-- `GET /v1/sessions/{id}/logs` — `client.Sessions.Logs(context.Background(), params)` → `SessionLogsResponse`
 - `POST /v1/sessions/{id}/release` — `client.Sessions.Release(context.Background(), params)` → `SessionReleaseResponse`
 - `POST /v1/sessions/{sessionId}/computer` — `client.Sessions.Computer(context.Background(), params)` → `SessionComputerResponse`
 

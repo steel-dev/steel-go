@@ -39,7 +39,7 @@ func (r *Profiles) Create(ctx context.Context, body ProfileCreateParams, opts ..
 
 // Get a profile
 func (r *Profiles) Get(ctx context.Context, id string, params ProfileGetParams, opts ...RequestOption) (*ProfileGetResponse, error) {
-	path := fmt.Sprintf("/v1/profiles/%s", id)
+	path := fmt.Sprintf("/v1/profiles/%s", url.PathEscape(id))
 	query := url.Values{}
 	if params.ProjectID != nil {
 		query.Set("projectId", *params.ProjectID)
@@ -56,7 +56,7 @@ func (r *Profiles) Get(ctx context.Context, id string, params ProfileGetParams, 
 
 // Update a profile
 func (r *Profiles) Update(ctx context.Context, id string, body ProfileUpdateParams, params ProfileUpdateQueryParams, opts ...RequestOption) (*ProfileUpdateResponse, error) {
-	path := fmt.Sprintf("/v1/profiles/%s", id)
+	path := fmt.Sprintf("/v1/profiles/%s", url.PathEscape(id))
 	query := url.Values{}
 	if params.ProjectID != nil {
 		query.Set("projectId", *params.ProjectID)

@@ -3,6 +3,7 @@ package steel
 import (
 	"context"
 	"fmt"
+	"net/url"
 )
 
 type Extensions struct {
@@ -41,7 +42,7 @@ func (r *Extensions) DeleteAll(ctx context.Context, opts ...RequestOption) (*Ext
 
 // Download extension
 func (r *Extensions) Download(ctx context.Context, extensionID string, opts ...RequestOption) ([]byte, error) {
-	path := fmt.Sprintf("/v1/extensions/%s", extensionID)
+	path := fmt.Sprintf("/v1/extensions/%s", url.PathEscape(extensionID))
 	data, err := r.client.doRaw(ctx, "GET", path, nil, opts...)
 	if err != nil {
 		return nil, err
@@ -51,7 +52,7 @@ func (r *Extensions) Download(ctx context.Context, extensionID string, opts ...R
 
 // Update extension
 func (r *Extensions) Update(ctx context.Context, extensionID string, body ExtensionUpdateParams, opts ...RequestOption) (*ExtensionUpdateResponse, error) {
-	path := fmt.Sprintf("/v1/extensions/%s", extensionID)
+	path := fmt.Sprintf("/v1/extensions/%s", url.PathEscape(extensionID))
 	var out ExtensionUpdateResponse
 	if err := r.client.doMultipart(ctx, "PUT", path, body, &out, opts...); err != nil {
 		return nil, err
@@ -61,7 +62,7 @@ func (r *Extensions) Update(ctx context.Context, extensionID string, body Extens
 
 // Delete extension
 func (r *Extensions) Delete(ctx context.Context, extensionID string, opts ...RequestOption) (*ExtensionDeleteResponse, error) {
-	path := fmt.Sprintf("/v1/extensions/%s", extensionID)
+	path := fmt.Sprintf("/v1/extensions/%s", url.PathEscape(extensionID))
 	var out ExtensionDeleteResponse
 	if err := r.client.do(ctx, "DELETE", path, nil, &out, opts...); err != nil {
 		return nil, err

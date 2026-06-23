@@ -34,7 +34,6 @@ type Client struct {
 	defaultHeader http.Header
 	defaultQuery  url.Values
 
-	WellKnown   *WellKnown
 	Credentials *Credentials
 	Extensions  *Extensions
 	Files       *Files
@@ -112,6 +111,7 @@ func (cfg *requestConfig) apply(req *http.Request) {
 }
 
 func (cfg *requestConfig) urlFor(baseURL, path string) string {
+	baseURL = strings.TrimSuffix(baseURL, "/")
 	if len(cfg.query) == 0 {
 		return baseURL + path
 	}
@@ -124,6 +124,7 @@ func (cfg *requestConfig) urlFor(baseURL, path string) string {
 
 func (cfg *requestConfig) capture(resp *http.Response, data []byte) {
 	if cfg.responseInto != nil {
+		resp.Body.Close()
 		resp.Body = io.NopCloser(bytes.NewReader(data))
 		*cfg.responseInto = resp
 	} else {
@@ -179,7 +180,6 @@ func newClient(apiKey, baseURL string, opts []Option) *Client {
 		defaultHeader: http.Header{},
 		defaultQuery:  url.Values{},
 	}
-	c.WellKnown = &WellKnown{client: c}
 	c.Credentials = &Credentials{client: c}
 	c.Extensions = &Extensions{client: c}
 	c.Files = &Files{client: c}
@@ -240,6 +240,15 @@ type ConflictError struct{ *APIError }
 type UnprocessableEntityError struct{ *APIError }
 type RateLimitError struct{ *APIError }
 type InternalServerError struct{ *APIError }
+
+func (e *BadRequestError) Unwrap() error          { return e.APIError }
+func (e *AuthenticationError) Unwrap() error      { return e.APIError }
+func (e *PermissionDeniedError) Unwrap() error    { return e.APIError }
+func (e *NotFoundError) Unwrap() error            { return e.APIError }
+func (e *ConflictError) Unwrap() error            { return e.APIError }
+func (e *UnprocessableEntityError) Unwrap() error { return e.APIError }
+func (e *RateLimitError) Unwrap() error           { return e.APIError }
+func (e *InternalServerError) Unwrap() error      { return e.APIError }
 
 type APIConnectionError struct{ Err error }
 
@@ -382,6 +391,15 @@ func backoffDuration(attempt int, retryAfter time.Duration) time.Duration {
 	return time.Duration(exp * jitter * float64(time.Second))
 }
 
+func sleepCtx(ctx context.Context, d time.Duration) {
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-ctx.Done():
+	case <-t.C:
+	}
+}
+
 func newRetryKey(method string) string {
 	if method == "GET" {
 		return ""
@@ -440,8 +458,8 @@ func (c *Client) do(ctx context.Context, method, path string, body, out interfac
 		cfg.apply(req)
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
-			if attempt < maxRetries {
-				time.Sleep(backoffDuration(attempt+1, 0))
+			if ctx.Err() == nil && attempt < maxRetries {
+				sleepCtx(ctx, backoffDuration(attempt+1, 0))
 				continue
 			}
 			return newConnectionError(err)
@@ -465,7 +483,7 @@ func (c *Client) do(ctx context.Context, method, path string, body, out interfac
 			wait := backoffDuration(attempt+1, parseRetryAfter(resp))
 			io.Copy(io.Discard, resp.Body)
 			resp.Body.Close()
-			time.Sleep(wait)
+			sleepCtx(ctx, wait)
 			continue
 		}
 
@@ -511,8 +529,8 @@ func (c *Client) doRaw(ctx context.Context, method, path string, body interface{
 		cfg.apply(req)
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
-			if attempt < maxRetries {
-				time.Sleep(backoffDuration(attempt+1, 0))
+			if ctx.Err() == nil && attempt < maxRetries {
+				sleepCtx(ctx, backoffDuration(attempt+1, 0))
 				continue
 			}
 			return nil, newConnectionError(err)
@@ -528,7 +546,7 @@ func (c *Client) doRaw(ctx context.Context, method, path string, body interface{
 			wait := backoffDuration(attempt+1, parseRetryAfter(resp))
 			io.Copy(io.Discard, resp.Body)
 			resp.Body.Close()
-			time.Sleep(wait)
+			sleepCtx(ctx, wait)
 			continue
 		}
 
@@ -631,7 +649,10 @@ func buildMultipart(body interface{}) (*bytes.Buffer, string, error) {
 		if idx := strings.Index(name, ","); idx >= 0 {
 			name = name[:idx]
 		}
-		if name == "" || name == "-" {
+		if name == "-" {
+			continue
+		}
+		if name == "" {
 			name = field.Name
 		}
 		fv := v.Field(i)
@@ -678,8 +699,8 @@ func (c *Client) doMultipart(ctx context.Context, method, path string, body, out
 		cfg.apply(req)
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
-			if attempt < maxRetries {
-				time.Sleep(backoffDuration(attempt+1, 0))
+			if ctx.Err() == nil && attempt < maxRetries {
+				sleepCtx(ctx, backoffDuration(attempt+1, 0))
 				continue
 			}
 			return newConnectionError(err)
@@ -703,7 +724,7 @@ func (c *Client) doMultipart(ctx context.Context, method, path string, body, out
 			wait := backoffDuration(attempt+1, parseRetryAfter(resp))
 			io.Copy(io.Discard, resp.Body)
 			resp.Body.Close()
-			time.Sleep(wait)
+			sleepCtx(ctx, wait)
 			continue
 		}
 

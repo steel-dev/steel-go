@@ -1636,21 +1636,6 @@ type CaptchaSolveResponse struct {
 	Success bool `json:"success"`
 }
 
-type CaptchaState struct {
-	// Timestamp when the state was created
-	Created *float64 `json:"created,omitempty"`
-	// Whether a captcha is currently being solved
-	IsSolvingCaptcha bool `json:"isSolvingCaptcha"`
-	// Timestamp when the state was last updated
-	LastUpdated *float64 `json:"lastUpdated,omitempty"`
-	// The page ID where the captcha is located
-	PageID string `json:"pageId"`
-	// Array of captcha tasks
-	Tasks []interface{} `json:"tasks"`
-	// The URL where the captcha is located
-	URL string `json:"url"`
-}
-
 type SessionComputerResponse struct {
 	// Base64 encoded screenshot if requested
 	Base64Image *string `json:"base64_image,omitempty"`
@@ -1719,21 +1704,6 @@ type SessionCreateParams struct {
 	UserAgent *string `json:"userAgent,omitempty"`
 }
 
-type Credential struct {
-	// Date and time the credential was created
-	CreatedAt time.Time `json:"createdAt"`
-	// Label for the credential
-	Label *string `json:"label,omitempty"`
-	// The namespace the credential is stored against. Defaults to "default".
-	Namespace *string `json:"namespace,omitempty"`
-	// Website origin the credential is for
-	Origin *string `json:"origin,omitempty"`
-	// Date and time the credential was last updated
-	UpdatedAt time.Time `json:"updatedAt"`
-	// Value for the credential
-	Value map[string]string `json:"value"`
-}
-
 type CredentialCreateParams struct {
 	// Label for the credential
 	Label *string `json:"label,omitempty"`
@@ -1790,27 +1760,12 @@ type ExtensionDeleteAllResponse struct {
 	Message string `json:"message"`
 }
 
-type DetailsResponse struct {
-	Plan string `json:"plan"`
-}
-
 // ErrorResponse An error response from the API
 type ErrorResponse struct {
 	Context    *[]ErrorResponseContext `json:"context,omitempty"`
 	Error      *string                 `json:"error,omitempty"`
 	LinkToDocs *string                 `json:"linkToDocs,omitempty"`
 	Message    string                  `json:"message"`
-}
-
-type Extension struct {
-	// Creation timestamp
-	CreatedAt string `json:"createdAt"`
-	// Unique extension identifier (e.g., ext_12345)
-	ID string `json:"id"`
-	// Extension name
-	Name string `json:"name"`
-	// Last update timestamp
-	UpdatedAt string `json:"updatedAt"`
 }
 
 // ExtensionListResponse Response containing a list of extensions for the organization
@@ -1848,28 +1803,10 @@ type FileUploadParams struct {
 	Path *string `json:"path,omitempty"`
 }
 
-type SessionAgentLogsResponse struct {
-	Events  []map[string]interface{} `json:"events"`
-	HasMore bool                     `json:"hasMore"`
-	Total   float64                  `json:"total"`
-}
-
 type SessionAgentTracesResponse struct {
 	Events  []map[string]interface{} `json:"events"`
 	HasMore bool                     `json:"hasMore"`
 	Total   float64                  `json:"total"`
-}
-
-type SessionLogsResponse struct {
-	Events  []SessionLogsResponseEvent `json:"events"`
-	HasMore bool                       `json:"hasMore"`
-	Total   float64                    `json:"total"`
-}
-
-// WellknownListResponse A JSON Web Key Set (JWKS) containing a list of public keys.
-type WellknownListResponse struct {
-	// A list of JSON Web Keys.
-	Keys []WellknownListResponseKey `json:"keys"`
 }
 
 type Fileslist struct {
@@ -2535,29 +2472,6 @@ type ExtensionListResponseExtension struct {
 	Name string `json:"name"`
 	// Last update timestamp
 	UpdatedAt string `json:"updatedAt"`
-}
-
-type SessionLogsResponseEvent struct {
-	ID        string    `json:"id"`
-	Log       string    `json:"log"`
-	Timestamp time.Time `json:"timestamp"`
-	Type      string    `json:"type"`
-}
-
-// WellknownListResponseKey A list of JSON Web Keys.
-type WellknownListResponseKey struct {
-	// The specific cryptographic algorithm used with the key (e.g., 'RS256').
-	Alg *string `json:"alg,omitempty"`
-	// The exponent for the RSA public key.
-	E *string `json:"e,omitempty"`
-	// The unique identifier for the key.
-	Kid *string `json:"kid,omitempty"`
-	// The key type, identifying the algorithm family (e.g., 'RSA').
-	Kty *string `json:"kty,omitempty"`
-	// The modulus for the RSA public key.
-	N *string `json:"n,omitempty"`
-	// The intended use of the public key (e.g., 'sig' for signature).
-	Use *string `json:"use,omitempty"`
 }
 
 // FileslistData Array of files for the current page
@@ -3601,15 +3515,6 @@ type SessionReleaseAllQueryParams struct {
 	ProjectID *string `json:"projectId,omitempty"`
 }
 
-type SessionAgentLogsParams struct {
-	Namespace  *string    `json:"namespace,omitempty"`
-	StartTime  *time.Time `json:"startTime,omitempty"`
-	EndTime    *time.Time `json:"endTime,omitempty"`
-	EventTypes *[]string  `json:"eventTypes,omitempty"`
-	Limit      *int64     `json:"limit,omitempty"`
-	Offset     *int64     `json:"offset,omitempty"`
-}
-
 type SessionAgentTracesParams struct {
 	Namespace  *string    `json:"namespace,omitempty"`
 	StartTime  *time.Time `json:"startTime,omitempty"`
@@ -3621,15 +3526,6 @@ type SessionEventsParams struct {
 	Compressed *bool   `json:"compressed,omitempty"`
 	Limit      *int64  `json:"limit,omitempty"`
 	Pointer    *string `json:"pointer,omitempty"`
-}
-
-type SessionLogsParams struct {
-	Namespace  *string    `json:"namespace,omitempty"`
-	StartTime  *time.Time `json:"startTime,omitempty"`
-	EndTime    *time.Time `json:"endTime,omitempty"`
-	EventTypes *[]string  `json:"eventTypes,omitempty"`
-	Limit      *int64     `json:"limit,omitempty"`
-	Offset     *int64     `json:"offset,omitempty"`
 }
 
 type CaptchaStatusResponse []CaptchaStatusResponseItem

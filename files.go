@@ -40,11 +40,7 @@ func (r *Files) Download(ctx context.Context, path string, opts ...RequestOption
 }
 
 // Delete a global file
-func (r *Files) Delete(ctx context.Context, path string, opts ...RequestOption) (*interface{}, error) {
+func (r *Files) Delete(ctx context.Context, path string, opts ...RequestOption) error {
 	reqPath := fmt.Sprintf("/v1/files/%s", path)
-	var out interface{}
-	if err := r.client.do(ctx, "DELETE", reqPath, nil, &out, opts...); err != nil {
-		return nil, err
-	}
-	return &out, nil
+	return r.client.do(ctx, "DELETE", reqPath, nil, nil, opts...)
 }
