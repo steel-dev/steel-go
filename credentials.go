@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-type Credentials struct {
+type CredentialService struct {
 	client *Client
 }
 
 // List all credential metadata
-func (r *Credentials) List(ctx context.Context, params CredentialListParams, opts ...RequestOption) (*CredentialListResponse, error) {
+func (r *CredentialService) List(ctx context.Context, params CredentialListParams, opts ...RequestOption) (*CredentialListResponse, error) {
 	path := "/v1/credentials"
 	query := url.Values{}
 	if params.ProjectID != nil {
@@ -36,7 +36,7 @@ func (r *Credentials) List(ctx context.Context, params CredentialListParams, opt
 }
 
 // Stores credentials
-func (r *Credentials) Create(ctx context.Context, body CredentialCreateParams, opts ...RequestOption) (*CredentialCreateResponse, error) {
+func (r *CredentialService) Create(ctx context.Context, body CredentialCreateParams, opts ...RequestOption) (*CredentialCreateResponse, error) {
 	path := "/v1/credentials"
 	var out CredentialCreateResponse
 	if err := r.client.do(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -46,7 +46,7 @@ func (r *Credentials) Create(ctx context.Context, body CredentialCreateParams, o
 }
 
 // Updates credentials
-func (r *Credentials) Update(ctx context.Context, body CredentialUpdateParams, opts ...RequestOption) (*CredentialUpdateResponse, error) {
+func (r *CredentialService) Update(ctx context.Context, body CredentialUpdateParams, opts ...RequestOption) (*CredentialUpdateResponse, error) {
 	path := "/v1/credentials"
 	var out CredentialUpdateResponse
 	if err := r.client.do(ctx, "PUT", path, body, &out, opts...); err != nil {
@@ -56,7 +56,7 @@ func (r *Credentials) Update(ctx context.Context, body CredentialUpdateParams, o
 }
 
 // Deletes credentials
-func (r *Credentials) Delete(ctx context.Context, body CredentialDeleteParams, opts ...RequestOption) (*CredentialDeleteResponse, error) {
+func (r *CredentialService) Delete(ctx context.Context, body CredentialDeleteParams, opts ...RequestOption) (*CredentialDeleteResponse, error) {
 	path := "/v1/credentials"
 	var out CredentialDeleteResponse
 	if err := r.client.do(ctx, "DELETE", path, body, &out, opts...); err != nil {

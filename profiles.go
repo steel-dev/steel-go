@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-type Profiles struct {
+type ProfileService struct {
 	client *Client
 }
 
 // List all profiles
-func (r *Profiles) List(ctx context.Context, params ProfileListParams, opts ...RequestOption) (*ProfileListResponse, error) {
+func (r *ProfileService) List(ctx context.Context, params ProfileListParams, opts ...RequestOption) (*ProfileListResponse, error) {
 	path := "/v1/profiles"
 	query := url.Values{}
 	if params.ProjectID != nil {
@@ -30,7 +30,7 @@ func (r *Profiles) List(ctx context.Context, params ProfileListParams, opts ...R
 }
 
 // Create a profile
-func (r *Profiles) Create(ctx context.Context, body ProfileCreateParams, opts ...RequestOption) (*ProfileCreateResponse, error) {
+func (r *ProfileService) Create(ctx context.Context, body ProfileCreateParams, opts ...RequestOption) (*ProfileCreateResponse, error) {
 	path := "/v1/profiles"
 	var out ProfileCreateResponse
 	if err := r.client.doMultipart(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -40,7 +40,7 @@ func (r *Profiles) Create(ctx context.Context, body ProfileCreateParams, opts ..
 }
 
 // Get a profile
-func (r *Profiles) Get(ctx context.Context, id string, params ProfileGetParams, opts ...RequestOption) (*ProfileGetResponse, error) {
+func (r *ProfileService) Get(ctx context.Context, id string, params ProfileGetParams, opts ...RequestOption) (*ProfileGetResponse, error) {
 	path := fmt.Sprintf("/v1/profiles/%s", url.PathEscape(id))
 	query := url.Values{}
 	if params.ProjectID != nil {
@@ -57,7 +57,7 @@ func (r *Profiles) Get(ctx context.Context, id string, params ProfileGetParams, 
 }
 
 // Update a profile
-func (r *Profiles) Update(ctx context.Context, id string, body ProfileUpdateParams, params ProfileUpdateQueryParams, opts ...RequestOption) (*ProfileUpdateResponse, error) {
+func (r *ProfileService) Update(ctx context.Context, id string, body ProfileUpdateParams, params ProfileUpdateQueryParams, opts ...RequestOption) (*ProfileUpdateResponse, error) {
 	path := fmt.Sprintf("/v1/profiles/%s", url.PathEscape(id))
 	query := url.Values{}
 	if params.ProjectID != nil {

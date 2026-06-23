@@ -34,11 +34,11 @@ type Client struct {
 	defaultHeader http.Header
 	defaultQuery  url.Values
 
-	Credentials *Credentials
-	Extensions  *Extensions
-	Files       *Files
-	Profiles    *Profiles
-	Sessions    *Sessions
+	Credentials *CredentialService
+	Extensions  *ExtensionService
+	Files       *FileService
+	Profiles    *ProfileService
+	Sessions    *SessionService
 }
 
 type Option func(*Client)
@@ -180,11 +180,11 @@ func newClient(apiKey, baseURL string, opts []Option) *Client {
 		defaultHeader: http.Header{},
 		defaultQuery:  url.Values{},
 	}
-	c.Credentials = &Credentials{client: c}
-	c.Extensions = &Extensions{client: c}
-	c.Files = &Files{client: c}
-	c.Profiles = &Profiles{client: c}
-	c.Sessions = &Sessions{client: c, Captchas: &SessionsCaptchas{client: c}, Files: &SessionsFiles{client: c}}
+	c.Credentials = &CredentialService{client: c}
+	c.Extensions = &ExtensionService{client: c}
+	c.Files = &FileService{client: c}
+	c.Profiles = &ProfileService{client: c}
+	c.Sessions = &SessionService{client: c, Captchas: &SessionServiceCaptchas{client: c}, Files: &SessionServiceFiles{client: c}}
 	for _, opt := range opts {
 		opt(c)
 	}

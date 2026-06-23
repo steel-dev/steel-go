@@ -10,14 +10,14 @@ import (
 	"time"
 )
 
-type Sessions struct {
+type SessionService struct {
 	client   *Client
-	Captchas *SessionsCaptchas
-	Files    *SessionsFiles
+	Captchas *SessionServiceCaptchas
+	Files    *SessionServiceFiles
 }
 
 // List all sessions
-func (r *Sessions) List(ctx context.Context, params SessionListParams, opts ...RequestOption) (*CursorPage[SessionslistSession], error) {
+func (r *SessionService) List(ctx context.Context, params SessionListParams, opts ...RequestOption) (*CursorPage[SessionslistSession], error) {
 	nextCursor := func(items []SessionslistSession, lastID string) string { return lastID }
 	var fetch func(ctx context.Context, cursor string) (*CursorPage[SessionslistSession], error)
 	fetch = func(ctx context.Context, cursor string) (*CursorPage[SessionslistSession], error) {
@@ -53,13 +53,13 @@ func (r *Sessions) List(ctx context.Context, params SessionListParams, opts ...R
 	return fetch(ctx, "")
 }
 
-func (r *Sessions) ListAutoPaging(ctx context.Context, params SessionListParams, opts ...RequestOption) *CursorPageAutoPager[SessionslistSession] {
+func (r *SessionService) ListAutoPaging(ctx context.Context, params SessionListParams, opts ...RequestOption) *CursorPageAutoPager[SessionslistSession] {
 	page, err := r.List(ctx, params, opts...)
 	return NewCursorPageAutoPager(page, err)
 }
 
 // Create a session
-func (r *Sessions) Create(ctx context.Context, body SessionCreateParams, opts ...RequestOption) (*Session, error) {
+func (r *SessionService) Create(ctx context.Context, body SessionCreateParams, opts ...RequestOption) (*Session, error) {
 	path := "/v1/sessions"
 	var out Session
 	if err := r.client.do(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -69,7 +69,7 @@ func (r *Sessions) Create(ctx context.Context, body SessionCreateParams, opts ..
 }
 
 // Release all sessions
-func (r *Sessions) ReleaseAll(ctx context.Context, body SessionReleaseAllParams, params SessionReleaseAllQueryParams, opts ...RequestOption) (*SessionReleaseAllResponse, error) {
+func (r *SessionService) ReleaseAll(ctx context.Context, body SessionReleaseAllParams, params SessionReleaseAllQueryParams, opts ...RequestOption) (*SessionReleaseAllResponse, error) {
 	path := "/v1/sessions/release"
 	query := url.Values{}
 	if params.ProjectID != nil {
@@ -86,7 +86,7 @@ func (r *Sessions) ReleaseAll(ctx context.Context, body SessionReleaseAllParams,
 }
 
 // Get session details
-func (r *Sessions) Retrieve(ctx context.Context, id string, opts ...RequestOption) (*Session, error) {
+func (r *SessionService) Retrieve(ctx context.Context, id string, opts ...RequestOption) (*Session, error) {
 	path := fmt.Sprintf("/v1/sessions/%s", url.PathEscape(id))
 	var out Session
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -96,7 +96,7 @@ func (r *Sessions) Retrieve(ctx context.Context, id string, opts ...RequestOptio
 }
 
 // Get session agent traces
-func (r *Sessions) AgentTraces(ctx context.Context, id string, params SessionAgentTracesParams, opts ...RequestOption) (*SessionAgentTracesResponse, error) {
+func (r *SessionService) AgentTraces(ctx context.Context, id string, params SessionAgentTracesParams, opts ...RequestOption) (*SessionAgentTracesResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/agent-traces", url.PathEscape(id))
 	query := url.Values{}
 	if params.Namespace != nil {
@@ -124,7 +124,7 @@ func (r *Sessions) AgentTraces(ctx context.Context, id string, params SessionAge
 }
 
 // Get session context
-func (r *Sessions) Context(ctx context.Context, id string, opts ...RequestOption) (*SessionContext, error) {
+func (r *SessionService) Context(ctx context.Context, id string, opts ...RequestOption) (*SessionContext, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/context", url.PathEscape(id))
 	var out SessionContext
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -134,7 +134,7 @@ func (r *Sessions) Context(ctx context.Context, id string, opts ...RequestOption
 }
 
 // Get session cost
-func (r *Sessions) Cost(ctx context.Context, id string, opts ...RequestOption) (*SessionCostResponse, error) {
+func (r *SessionService) Cost(ctx context.Context, id string, opts ...RequestOption) (*SessionCostResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/cost", url.PathEscape(id))
 	var out SessionCostResponse
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -144,7 +144,7 @@ func (r *Sessions) Cost(ctx context.Context, id string, opts ...RequestOption) (
 }
 
 // Get recorded events
-func (r *Sessions) Events(ctx context.Context, id string, params SessionEventsParams, opts ...RequestOption) (*SessionEventsResponse, error) {
+func (r *SessionService) Events(ctx context.Context, id string, params SessionEventsParams, opts ...RequestOption) (*SessionEventsResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/events", url.PathEscape(id))
 	query := url.Values{}
 	if params.Compressed != nil {
@@ -167,7 +167,7 @@ func (r *Sessions) Events(ctx context.Context, id string, params SessionEventsPa
 }
 
 // Get live session details
-func (r *Sessions) LiveDetails(ctx context.Context, id string, opts ...RequestOption) (*SessionLiveDetailsResponse, error) {
+func (r *SessionService) LiveDetails(ctx context.Context, id string, opts ...RequestOption) (*SessionLiveDetailsResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/live-details", url.PathEscape(id))
 	var out SessionLiveDetailsResponse
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -177,7 +177,7 @@ func (r *Sessions) LiveDetails(ctx context.Context, id string, opts ...RequestOp
 }
 
 // Release a session
-func (r *Sessions) Release(ctx context.Context, id string, body SessionReleaseParams, opts ...RequestOption) (*SessionReleaseResponse, error) {
+func (r *SessionService) Release(ctx context.Context, id string, body SessionReleaseParams, opts ...RequestOption) (*SessionReleaseResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/release", url.PathEscape(id))
 	var out SessionReleaseResponse
 	if err := r.client.do(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -187,7 +187,7 @@ func (r *Sessions) Release(ctx context.Context, id string, body SessionReleasePa
 }
 
 // Execute computer action
-func (r *Sessions) Computer(ctx context.Context, sessionID string, body SessionComputerParams, opts ...RequestOption) (*SessionComputerResponse, error) {
+func (r *SessionService) Computer(ctx context.Context, sessionID string, body SessionComputerParams, opts ...RequestOption) (*SessionComputerResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/computer", url.PathEscape(sessionID))
 	var out SessionComputerResponse
 	if err := r.client.do(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -196,12 +196,12 @@ func (r *Sessions) Computer(ctx context.Context, sessionID string, body SessionC
 	return &out, nil
 }
 
-type SessionsCaptchas struct {
+type SessionServiceCaptchas struct {
 	client *Client
 }
 
 // Solve captcha(s)
-func (r *SessionsCaptchas) Solve(ctx context.Context, sessionID string, body CaptchaSolveParams, opts ...RequestOption) (*CaptchaSolveResponse, error) {
+func (r *SessionServiceCaptchas) Solve(ctx context.Context, sessionID string, body CaptchaSolveParams, opts ...RequestOption) (*CaptchaSolveResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/captchas/solve", url.PathEscape(sessionID))
 	var out CaptchaSolveResponse
 	if err := r.client.do(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -211,7 +211,7 @@ func (r *SessionsCaptchas) Solve(ctx context.Context, sessionID string, body Cap
 }
 
 // Solve image captcha
-func (r *SessionsCaptchas) SolveImage(ctx context.Context, sessionID string, body CaptchaSolveImageParams, opts ...RequestOption) (*CaptchaSolveImageResponse, error) {
+func (r *SessionServiceCaptchas) SolveImage(ctx context.Context, sessionID string, body CaptchaSolveImageParams, opts ...RequestOption) (*CaptchaSolveImageResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/captchas/solve-image", url.PathEscape(sessionID))
 	var out CaptchaSolveImageResponse
 	if err := r.client.do(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -221,7 +221,7 @@ func (r *SessionsCaptchas) SolveImage(ctx context.Context, sessionID string, bod
 }
 
 // Get captcha status
-func (r *SessionsCaptchas) Status(ctx context.Context, sessionID string, opts ...RequestOption) (*CaptchaStatusResponse, error) {
+func (r *SessionServiceCaptchas) Status(ctx context.Context, sessionID string, opts ...RequestOption) (*CaptchaStatusResponse, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/captchas/status", url.PathEscape(sessionID))
 	var out CaptchaStatusResponse
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -230,12 +230,12 @@ func (r *SessionsCaptchas) Status(ctx context.Context, sessionID string, opts ..
 	return &out, nil
 }
 
-type SessionsFiles struct {
+type SessionServiceFiles struct {
 	client *Client
 }
 
 // List files
-func (r *SessionsFiles) List(ctx context.Context, sessionID string, opts ...RequestOption) (*Fileslist, error) {
+func (r *SessionServiceFiles) List(ctx context.Context, sessionID string, opts ...RequestOption) (*Fileslist, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/files", url.PathEscape(sessionID))
 	var out Fileslist
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -245,7 +245,7 @@ func (r *SessionsFiles) List(ctx context.Context, sessionID string, opts ...Requ
 }
 
 // Upload a file
-func (r *SessionsFiles) Upload(ctx context.Context, sessionID string, body FileUploadParams2, opts ...RequestOption) (*File, error) {
+func (r *SessionServiceFiles) Upload(ctx context.Context, sessionID string, body FileUploadParams2, opts ...RequestOption) (*File, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/files", url.PathEscape(sessionID))
 	var out File
 	if err := r.client.doMultipart(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -255,13 +255,13 @@ func (r *SessionsFiles) Upload(ctx context.Context, sessionID string, body FileU
 }
 
 // Delete all files
-func (r *SessionsFiles) DeleteAll(ctx context.Context, sessionID string, opts ...RequestOption) error {
+func (r *SessionServiceFiles) DeleteAll(ctx context.Context, sessionID string, opts ...RequestOption) error {
 	path := fmt.Sprintf("/v1/sessions/%s/files", url.PathEscape(sessionID))
 	return r.client.do(ctx, "DELETE", path, nil, nil, opts...)
 }
 
 // Download archive
-func (r *SessionsFiles) DownloadArchive(ctx context.Context, sessionID string, opts ...RequestOption) ([]byte, error) {
+func (r *SessionServiceFiles) DownloadArchive(ctx context.Context, sessionID string, opts ...RequestOption) ([]byte, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/files.zip", url.PathEscape(sessionID))
 	data, err := r.client.doRaw(ctx, "GET", path, nil, opts...)
 	if err != nil {
@@ -271,7 +271,7 @@ func (r *SessionsFiles) DownloadArchive(ctx context.Context, sessionID string, o
 }
 
 // Download a file
-func (r *SessionsFiles) Download(ctx context.Context, sessionID string, path string, opts ...RequestOption) ([]byte, error) {
+func (r *SessionServiceFiles) Download(ctx context.Context, sessionID string, path string, opts ...RequestOption) ([]byte, error) {
 	reqPath := fmt.Sprintf("/v1/sessions/%s/files/%s", url.PathEscape(sessionID), path)
 	data, err := r.client.doRaw(ctx, "GET", reqPath, nil, opts...)
 	if err != nil {
@@ -281,7 +281,7 @@ func (r *SessionsFiles) Download(ctx context.Context, sessionID string, path str
 }
 
 // Delete a file
-func (r *SessionsFiles) Delete(ctx context.Context, sessionID string, path string, opts ...RequestOption) error {
+func (r *SessionServiceFiles) Delete(ctx context.Context, sessionID string, path string, opts ...RequestOption) error {
 	reqPath := fmt.Sprintf("/v1/sessions/%s/files/%s", url.PathEscape(sessionID), path)
 	return r.client.do(ctx, "DELETE", reqPath, nil, nil, opts...)
 }

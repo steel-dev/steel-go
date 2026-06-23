@@ -5,12 +5,12 @@ import (
 	"fmt"
 )
 
-type Files struct {
+type FileService struct {
 	client *Client
 }
 
 // List global files
-func (r *Files) List(ctx context.Context, opts ...RequestOption) (*Fileslist, error) {
+func (r *FileService) List(ctx context.Context, opts ...RequestOption) (*Fileslist, error) {
 	path := "/v1/files"
 	var out Fileslist
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -20,7 +20,7 @@ func (r *Files) List(ctx context.Context, opts ...RequestOption) (*Fileslist, er
 }
 
 // Upload a global file
-func (r *Files) Upload(ctx context.Context, body FileUploadParams, opts ...RequestOption) (*File, error) {
+func (r *FileService) Upload(ctx context.Context, body FileUploadParams, opts ...RequestOption) (*File, error) {
 	path := "/v1/files"
 	var out File
 	if err := r.client.doMultipart(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -30,7 +30,7 @@ func (r *Files) Upload(ctx context.Context, body FileUploadParams, opts ...Reque
 }
 
 // Download a global file
-func (r *Files) Download(ctx context.Context, path string, opts ...RequestOption) ([]byte, error) {
+func (r *FileService) Download(ctx context.Context, path string, opts ...RequestOption) ([]byte, error) {
 	reqPath := fmt.Sprintf("/v1/files/%s", path)
 	data, err := r.client.doRaw(ctx, "GET", reqPath, nil, opts...)
 	if err != nil {
@@ -40,7 +40,7 @@ func (r *Files) Download(ctx context.Context, path string, opts ...RequestOption
 }
 
 // Delete a global file
-func (r *Files) Delete(ctx context.Context, path string, opts ...RequestOption) error {
+func (r *FileService) Delete(ctx context.Context, path string, opts ...RequestOption) error {
 	reqPath := fmt.Sprintf("/v1/files/%s", path)
 	return r.client.do(ctx, "DELETE", reqPath, nil, nil, opts...)
 }

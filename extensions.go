@@ -7,12 +7,12 @@ import (
 	"net/url"
 )
 
-type Extensions struct {
+type ExtensionService struct {
 	client *Client
 }
 
 // List extensions
-func (r *Extensions) List(ctx context.Context, opts ...RequestOption) (*ExtensionListResponse, error) {
+func (r *ExtensionService) List(ctx context.Context, opts ...RequestOption) (*ExtensionListResponse, error) {
 	path := "/v1/extensions"
 	var out ExtensionListResponse
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
@@ -22,7 +22,7 @@ func (r *Extensions) List(ctx context.Context, opts ...RequestOption) (*Extensio
 }
 
 // Upload extension
-func (r *Extensions) Upload(ctx context.Context, body ExtensionUploadParams, opts ...RequestOption) (*ExtensionUploadResponse, error) {
+func (r *ExtensionService) Upload(ctx context.Context, body ExtensionUploadParams, opts ...RequestOption) (*ExtensionUploadResponse, error) {
 	path := "/v1/extensions"
 	var out ExtensionUploadResponse
 	if err := r.client.doMultipart(ctx, "POST", path, body, &out, opts...); err != nil {
@@ -32,7 +32,7 @@ func (r *Extensions) Upload(ctx context.Context, body ExtensionUploadParams, opt
 }
 
 // Delete all extensions
-func (r *Extensions) DeleteAll(ctx context.Context, opts ...RequestOption) (*ExtensionDeleteAllResponse, error) {
+func (r *ExtensionService) DeleteAll(ctx context.Context, opts ...RequestOption) (*ExtensionDeleteAllResponse, error) {
 	path := "/v1/extensions"
 	var out ExtensionDeleteAllResponse
 	if err := r.client.do(ctx, "DELETE", path, nil, &out, opts...); err != nil {
@@ -42,7 +42,7 @@ func (r *Extensions) DeleteAll(ctx context.Context, opts ...RequestOption) (*Ext
 }
 
 // Download extension
-func (r *Extensions) Download(ctx context.Context, extensionID string, opts ...RequestOption) ([]byte, error) {
+func (r *ExtensionService) Download(ctx context.Context, extensionID string, opts ...RequestOption) ([]byte, error) {
 	path := fmt.Sprintf("/v1/extensions/%s", url.PathEscape(extensionID))
 	data, err := r.client.doRaw(ctx, "GET", path, nil, opts...)
 	if err != nil {
@@ -52,7 +52,7 @@ func (r *Extensions) Download(ctx context.Context, extensionID string, opts ...R
 }
 
 // Update extension
-func (r *Extensions) Update(ctx context.Context, extensionID string, body ExtensionUpdateParams, opts ...RequestOption) (*ExtensionUpdateResponse, error) {
+func (r *ExtensionService) Update(ctx context.Context, extensionID string, body ExtensionUpdateParams, opts ...RequestOption) (*ExtensionUpdateResponse, error) {
 	path := fmt.Sprintf("/v1/extensions/%s", url.PathEscape(extensionID))
 	var out ExtensionUpdateResponse
 	if err := r.client.doMultipart(ctx, "PUT", path, body, &out, opts...); err != nil {
@@ -62,7 +62,7 @@ func (r *Extensions) Update(ctx context.Context, extensionID string, body Extens
 }
 
 // Delete extension
-func (r *Extensions) Delete(ctx context.Context, extensionID string, opts ...RequestOption) (*ExtensionDeleteResponse, error) {
+func (r *ExtensionService) Delete(ctx context.Context, extensionID string, opts ...RequestOption) (*ExtensionDeleteResponse, error) {
 	path := fmt.Sprintf("/v1/extensions/%s", url.PathEscape(extensionID))
 	var out ExtensionDeleteResponse
 	if err := r.client.do(ctx, "DELETE", path, nil, &out, opts...); err != nil {
