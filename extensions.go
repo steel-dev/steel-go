@@ -40,13 +40,13 @@ func (r *Extensions) DeleteAll(ctx context.Context, opts ...RequestOption) (*Ext
 }
 
 // Download extension
-func (r *Extensions) Download(ctx context.Context, extensionID string, opts ...RequestOption) (*FileUpload, error) {
+func (r *Extensions) Download(ctx context.Context, extensionID string, opts ...RequestOption) ([]byte, error) {
 	path := fmt.Sprintf("/v1/extensions/%s", extensionID)
-	var out FileUpload
-	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
+	data, err := r.client.doRaw(ctx, "GET", path, nil, opts...)
+	if err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return data, nil
 }
 
 // Update extension

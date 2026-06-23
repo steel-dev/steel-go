@@ -14,15 +14,10 @@ type Sessions struct {
 }
 
 // List all sessions
-func (r *Sessions) List(ctx context.Context, params SessionListParams, opts ...RequestOption) (*CursorPage[Session2], error) {
-	nextCursor := func(items []Session2, _ string) string {
-		if n := len(items); n > 0 {
-			return items[n-1].ID
-		}
-		return ""
-	}
-	var fetch func(ctx context.Context, cursor string) (*CursorPage[Session2], error)
-	fetch = func(ctx context.Context, cursor string) (*CursorPage[Session2], error) {
+func (r *Sessions) List(ctx context.Context, params SessionListParams, opts ...RequestOption) (*CursorPage[SessionslistSession], error) {
+	nextCursor := func(items []SessionslistSession, lastID string) string { return lastID }
+	var fetch func(ctx context.Context, cursor string) (*CursorPage[SessionslistSession], error)
+	fetch = func(ctx context.Context, cursor string) (*CursorPage[SessionslistSession], error) {
 		path := "/v1/sessions"
 		query := url.Values{}
 		if params.CursorID != nil {
@@ -43,7 +38,7 @@ func (r *Sessions) List(ctx context.Context, params SessionListParams, opts ...R
 		if encoded := query.Encode(); encoded != "" {
 			path += "?" + encoded
 		}
-		var out CursorPage[Session2]
+		var out CursorPage[SessionslistSession]
 		if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
 			return nil, err
 		}
@@ -55,7 +50,7 @@ func (r *Sessions) List(ctx context.Context, params SessionListParams, opts ...R
 	return fetch(ctx, "")
 }
 
-func (r *Sessions) ListAutoPaging(ctx context.Context, params SessionListParams, opts ...RequestOption) *CursorPageAutoPager[Session2] {
+func (r *Sessions) ListAutoPaging(ctx context.Context, params SessionListParams, opts ...RequestOption) *CursorPageAutoPager[SessionslistSession] {
 	page, err := r.List(ctx, params, opts...)
 	return NewCursorPageAutoPager(page, err)
 }

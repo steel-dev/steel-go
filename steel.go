@@ -35,7 +35,7 @@ type Client struct {
 	defaultQuery  url.Values
 
 	WellKnown   *WellKnown
-	Credentials *CredentialsResource
+	Credentials *Credentials
 	Extensions  *Extensions
 	Files       *Files
 	Profiles    *Profiles
@@ -180,7 +180,7 @@ func newClient(apiKey, baseURL string, opts []Option) *Client {
 		defaultQuery:  url.Values{},
 	}
 	c.WellKnown = &WellKnown{client: c}
-	c.Credentials = &CredentialsResource{client: c}
+	c.Credentials = &Credentials{client: c}
 	c.Extensions = &Extensions{client: c}
 	c.Files = &Files{client: c}
 	c.Profiles = &Profiles{client: c}

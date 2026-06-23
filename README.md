@@ -2,6 +2,10 @@
 
 Steel API client
 
+This library provides convenient, typed access to the Steel API from Go.
+
+The full API of this library can be found in [api.md](./api.md).
+
 ## Installation
 
 ```sh
@@ -23,7 +27,7 @@ import (
 
 func main() {
 	client := steel.NewClient(os.Getenv("STEEL_API_KEY"))
-	result, err := client.Sessions.Create(context.Background(), params)
+	result, err := client.Sessions.Create(context.Background(), steel.SessionCreateParams{})
 	if err != nil {
 		panic(err)
 	}
@@ -31,15 +35,75 @@ func main() {
 }
 ```
 
-Authentication uses API key (`steel-api-key`). The example above reads the key from the `STEEL_API_KEY` environment variable.
+Authentication uses API key (`steel-api-key`). The client reads the key from the `STEEL_API_KEY` environment variable when one is not passed explicitly.
 
 ## Pagination
 
-List endpoints are paginated. Each response exposes the page items together with a cursor for fetching the next page.
+List methods are paginated. The SDK fetches further pages automatically as you iterate.
 
-## Errors
+```go
+iter := client.Sessions.ListAutoPaging(context.Background(), steel.SessionListParams{})
+for iter.Next() {
+	item := iter.Current()
+	fmt.Println(item)
+}
+if err := iter.Err(); err != nil {
+	panic(err)
+}
+```
 
-Every method returns an `error` as its final value; check it before using the result.
+## Handling errors
+
+Methods return an `error` as their final value. API errors can be inspected by asserting to `*APIError`:
+
+```go
+result, err := client.SomeResource.SomeMethod(context.Background())
+if err != nil {
+	var apiErr *steel.APIError
+	if errors.As(err, &apiErr) {
+		fmt.Println(apiErr.StatusCode)
+		fmt.Println(apiErr.RequestID)
+	}
+	return err
+}
+```
+
+## Retries
+
+Certain errors are automatically retried twice by default with a short exponential backoff. Connection errors, 408, 409, 429, and 5xx responses are retried.
+
+```go
+// Configure the default for all requests:
+client := steel.NewClient(apiKey, steel.WithMaxRetries(0)) // default is 2
+
+// Or per-request:
+client.SomeResource.SomeMethod(context.Background(), steel.WithRequestMaxRetries(5))
+```
+
+## Timeouts
+
+Requests time out after 1 minute by default. Configure this with a timeout option:
+
+```go
+client := steel.NewClient(apiKey, steel.WithTimeout(20*time.Second))
+
+// Or per-request:
+client.SomeResource.SomeMethod(context.Background(), steel.WithRequestTimeout(5*time.Second))
+```
+
+## Per-request options
+
+Pass `RequestOption` values to override behaviour for a single call:
+
+```go
+client.SomeResource.SomeMethod(
+	context.Background(),
+	steel.WithRequestHeader("X-Custom", "value"),
+	steel.WithIdempotencyKey("my-key"),
+)
+```
+
+Use `steel.WithResponseInto(&resp)` to access the raw `*http.Response`.
 
 ## Requirements
 

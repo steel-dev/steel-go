@@ -3,7 +3,8 @@ package steel
 import "context"
 
 type CursorPage[T any] struct {
-	Sessions   []T `json:"sessions"`
+	Sessions   []T    `json:"sessions"`
+	NextCursor string `json:"nextCursor"`
 	fetch      func(ctx context.Context, cursor string) (*CursorPage[T], error)
 	ctx        context.Context
 	nextCursor func([]T, string) string
@@ -13,7 +14,7 @@ func (p *CursorPage[T]) GetNextPage() (*CursorPage[T], error) {
 	if !(len(p.Sessions) > 0) {
 		return nil, nil
 	}
-	cursor := p.nextCursor(p.Sessions, "")
+	cursor := p.nextCursor(p.Sessions, p.NextCursor)
 	if cursor == "" {
 		return nil, nil
 	}
