@@ -427,9 +427,9 @@ func newRetryKey(method string) string {
 }
 
 func setRuntimeHeaders(req *http.Request, idempotencyKey string) {
-	req.Header.Set("user-agent", "steel-go/0.1.2")
+	req.Header.Set("user-agent", "steel-go/0.1.3")
 	req.Header.Set("x-steel-lang", "go")
-	req.Header.Set("x-steel-package-version", "0.1.2")
+	req.Header.Set("x-steel-package-version", "0.1.3")
 	if idempotencyKey != "" {
 		req.Header.Set("idempotency-key", idempotencyKey)
 	}

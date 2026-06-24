@@ -11,9 +11,9 @@ type FileService struct {
 }
 
 // List global files
-func (r *FileService) List(ctx context.Context, opts ...RequestOption) (*Fileslist, error) {
+func (r *FileService) List(ctx context.Context, opts ...RequestOption) (*FileList, error) {
 	path := "/v1/files"
-	var out Fileslist
+	var out FileList
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
 		return nil, err
 	}

@@ -82,76 +82,76 @@ const (
 	SessionResponseStatusFailed   SessionResponseStatus = "failed"
 )
 
-type ComputerActionRequestVariant0Action string
+type ComputerActionRequestMoveMouseAction string
 
 const (
-	ComputerActionRequestVariant0ActionMoveMouse ComputerActionRequestVariant0Action = "move_mouse"
+	ComputerActionRequestMoveMouseActionMoveMouse ComputerActionRequestMoveMouseAction = "move_mouse"
 )
 
-type ComputerActionRequestVariant1Action string
+type ComputerActionRequestClickMouseAction string
 
 const (
-	ComputerActionRequestVariant1ActionClickMouse ComputerActionRequestVariant1Action = "click_mouse"
+	ComputerActionRequestClickMouseActionClickMouse ComputerActionRequestClickMouseAction = "click_mouse"
 )
 
-type ComputerActionRequestVariant1Button string
+type ComputerActionRequestClickMouseButton string
 
 const (
-	ComputerActionRequestVariant1ButtonLeft    ComputerActionRequestVariant1Button = "left"
-	ComputerActionRequestVariant1ButtonRight   ComputerActionRequestVariant1Button = "right"
-	ComputerActionRequestVariant1ButtonMiddle  ComputerActionRequestVariant1Button = "middle"
-	ComputerActionRequestVariant1ButtonBack    ComputerActionRequestVariant1Button = "back"
-	ComputerActionRequestVariant1ButtonForward ComputerActionRequestVariant1Button = "forward"
+	ComputerActionRequestClickMouseButtonLeft    ComputerActionRequestClickMouseButton = "left"
+	ComputerActionRequestClickMouseButtonRight   ComputerActionRequestClickMouseButton = "right"
+	ComputerActionRequestClickMouseButtonMiddle  ComputerActionRequestClickMouseButton = "middle"
+	ComputerActionRequestClickMouseButtonBack    ComputerActionRequestClickMouseButton = "back"
+	ComputerActionRequestClickMouseButtonForward ComputerActionRequestClickMouseButton = "forward"
 )
 
-type ComputerActionRequestVariant1ClickType string
+type ComputerActionRequestClickMouseClickType string
 
 const (
-	ComputerActionRequestVariant1ClickTypeDown  ComputerActionRequestVariant1ClickType = "down"
-	ComputerActionRequestVariant1ClickTypeUp    ComputerActionRequestVariant1ClickType = "up"
-	ComputerActionRequestVariant1ClickTypeClick ComputerActionRequestVariant1ClickType = "click"
+	ComputerActionRequestClickMouseClickTypeDown  ComputerActionRequestClickMouseClickType = "down"
+	ComputerActionRequestClickMouseClickTypeUp    ComputerActionRequestClickMouseClickType = "up"
+	ComputerActionRequestClickMouseClickTypeClick ComputerActionRequestClickMouseClickType = "click"
 )
 
-type ComputerActionRequestVariant2Action string
+type ComputerActionRequestDragMouseAction string
 
 const (
-	ComputerActionRequestVariant2ActionDragMouse ComputerActionRequestVariant2Action = "drag_mouse"
+	ComputerActionRequestDragMouseActionDragMouse ComputerActionRequestDragMouseAction = "drag_mouse"
 )
 
-type ComputerActionRequestVariant3Action string
+type ComputerActionRequestScrollAction string
 
 const (
-	ComputerActionRequestVariant3ActionScroll ComputerActionRequestVariant3Action = "scroll"
+	ComputerActionRequestScrollActionScroll ComputerActionRequestScrollAction = "scroll"
 )
 
-type ComputerActionRequestVariant4Action string
+type ComputerActionRequestPressKeyAction string
 
 const (
-	ComputerActionRequestVariant4ActionPressKey ComputerActionRequestVariant4Action = "press_key"
+	ComputerActionRequestPressKeyActionPressKey ComputerActionRequestPressKeyAction = "press_key"
 )
 
-type ComputerActionRequestVariant5Action string
+type ComputerActionRequestTypeTextAction string
 
 const (
-	ComputerActionRequestVariant5ActionTypeText ComputerActionRequestVariant5Action = "type_text"
+	ComputerActionRequestTypeTextActionTypeText ComputerActionRequestTypeTextAction = "type_text"
 )
 
-type ComputerActionRequestVariant6Action string
+type ComputerActionRequestWaitAction string
 
 const (
-	ComputerActionRequestVariant6ActionWait ComputerActionRequestVariant6Action = "wait"
+	ComputerActionRequestWaitActionWait ComputerActionRequestWaitAction = "wait"
 )
 
-type ComputerActionRequestVariant7Action string
+type ComputerActionRequestTakeScreenshotAction string
 
 const (
-	ComputerActionRequestVariant7ActionTakeScreenshot ComputerActionRequestVariant7Action = "take_screenshot"
+	ComputerActionRequestTakeScreenshotActionTakeScreenshot ComputerActionRequestTakeScreenshotAction = "take_screenshot"
 )
 
-type ComputerActionRequestVariant8Action string
+type ComputerActionRequestGetCursorPositionAction string
 
 const (
-	ComputerActionRequestVariant8ActionGetCursorPosition ComputerActionRequestVariant8Action = "get_cursor_position"
+	ComputerActionRequestGetCursorPositionActionGetCursorPosition ComputerActionRequestGetCursorPositionAction = "get_cursor_position"
 )
 
 type CreateSessionRequestDeviceConfigDevice string
@@ -1585,24 +1585,24 @@ func (r fileJSON) RawJSON() string {
 	return r.raw
 }
 
-type Fileslist struct {
+type FileList struct {
 	// Array of files for the current page
-	Data []FileslistData `json:"data" api:"required"`
-	JSON fileslistJSON   `json:"-"`
+	Data []FileListData `json:"data" api:"required"`
+	JSON fileListJSON   `json:"-"`
 }
 
-// fileslistJSON contains the JSON metadata for the struct [Fileslist]
-type fileslistJSON struct {
+// fileListJSON contains the JSON metadata for the struct [FileList]
+type fileListJSON struct {
 	Data        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *Fileslist) UnmarshalJSON(data []byte) (err error) {
+func (r *FileList) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r fileslistJSON) RawJSON() string {
+func (r fileListJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -1760,19 +1760,19 @@ func (r errorResponseContextJSON) RawJSON() string {
 	return r.raw
 }
 
-// FileslistData Array of files for the current page
-type FileslistData struct {
+// FileListData Array of files for the current page
+type FileListData struct {
 	// Timestamp when the file was created
 	LastModified time.Time `json:"lastModified" api:"required"`
 	// Path to the file in the storage system
 	Path string `json:"path" api:"required"`
 	// Size of the file in bytes
-	Size int64             `json:"size" api:"required"`
-	JSON fileslistDataJSON `json:"-"`
+	Size int64            `json:"size" api:"required"`
+	JSON fileListDataJSON `json:"-"`
 }
 
-// fileslistDataJSON contains the JSON metadata for the struct [FileslistData]
-type fileslistDataJSON struct {
+// fileListDataJSON contains the JSON metadata for the struct [FileListData]
+type fileListDataJSON struct {
 	LastModified apijson.Field
 	Path         apijson.Field
 	Size         apijson.Field
@@ -1780,11 +1780,11 @@ type fileslistDataJSON struct {
 	ExtraFields  map[string]apijson.Field
 }
 
-func (r *FileslistData) UnmarshalJSON(data []byte) (err error) {
+func (r *FileListData) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r fileslistDataJSON) RawJSON() string {
+func (r fileListDataJSON) RawJSON() string {
 	return r.raw
 }
 

@@ -18,7 +18,7 @@
 
 ## files
 
-- `GET /v1/files` — `client.Files.List(context.Background())` → `Fileslist`
+- `GET /v1/files` — `client.Files.List(context.Background())` → `FileList`
 - `POST /v1/files` — `client.Files.Upload(context.Background(), params)` → `File`
 - `GET /v1/files/{path}` — `client.Files.Download(context.Background(), params)`
 - `DELETE /v1/files/{path}` — `client.Files.Delete(context.Background(), params)`
@@ -38,7 +38,7 @@
 
 ## sessions
 
-- `GET /v1/sessions` — `client.Sessions.List(context.Background(), params)` → `Sessionslist` _(paginated)_
+- `GET /v1/sessions` — `client.Sessions.List(context.Background(), params)` → `SessionList` _(paginated)_
 - `POST /v1/sessions` — `client.Sessions.Create(context.Background(), params)` → `Session`
 - `POST /v1/sessions/release` — `client.Sessions.ReleaseAll(context.Background(), params)` → `SessionReleaseAllResponse`
 - `GET /v1/sessions/{id}` — `client.Sessions.Retrieve(context.Background(), params)` → `Session`
@@ -58,7 +58,7 @@
 
 ## sessions.files
 
-- `GET /v1/sessions/{sessionId}/files` — `client.Sessions.Files.List(context.Background(), params)` → `Fileslist`
+- `GET /v1/sessions/{sessionId}/files` — `client.Sessions.Files.List(context.Background(), params)` → `FileList`
 - `POST /v1/sessions/{sessionId}/files` — `client.Sessions.Files.Upload(context.Background(), params)` → `File`
 - `DELETE /v1/sessions/{sessionId}/files` — `client.Sessions.Files.DeleteAll(context.Background(), params)`
 - `GET /v1/sessions/{sessionId}/files.zip` — `client.Sessions.Files.DownloadArchive(context.Background(), params)`

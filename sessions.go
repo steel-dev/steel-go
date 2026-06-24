@@ -19,10 +19,10 @@ type SessionService struct {
 }
 
 // List all sessions
-func (r *SessionService) List(ctx context.Context, params SessionListParams, opts ...RequestOption) (*CursorPage[SessionslistSession], error) {
-	nextCursor := func(items []SessionslistSession, lastID string) string { return lastID }
-	var fetch func(ctx context.Context, cursor string) (*CursorPage[SessionslistSession], error)
-	fetch = func(ctx context.Context, cursor string) (*CursorPage[SessionslistSession], error) {
+func (r *SessionService) List(ctx context.Context, params SessionListParams, opts ...RequestOption) (*CursorPage[SessionListSession], error) {
+	nextCursor := func(items []SessionListSession, lastID string) string { return lastID }
+	var fetch func(ctx context.Context, cursor string) (*CursorPage[SessionListSession], error)
+	fetch = func(ctx context.Context, cursor string) (*CursorPage[SessionListSession], error) {
 		path := "/v1/sessions"
 		query := url.Values{}
 		if params.CursorID != nil {
@@ -47,17 +47,17 @@ func (r *SessionService) List(ctx context.Context, params SessionListParams, opt
 		if err := r.client.do(ctx, "GET", path, nil, &raw, opts...); err != nil {
 			return nil, err
 		}
-		items, cursorVal, hasMore, derr := decodeCursorPage[SessionslistSession](raw, "sessions", "nextCursor", "")
+		items, cursorVal, hasMore, derr := decodeCursorPage[SessionListSession](raw, "sessions", "nextCursor", "")
 		if derr != nil {
 			return nil, derr
 		}
-		out := CursorPage[SessionslistSession]{Items: items, cursor: cursorVal, hasMore: hasMore, fetch: fetch, ctx: ctx, nextCursor: nextCursor}
+		out := CursorPage[SessionListSession]{Items: items, cursor: cursorVal, hasMore: hasMore, fetch: fetch, ctx: ctx, nextCursor: nextCursor}
 		return &out, nil
 	}
 	return fetch(ctx, "")
 }
 
-func (r *SessionService) ListAutoPaging(ctx context.Context, params SessionListParams, opts ...RequestOption) *CursorPageAutoPager[SessionslistSession] {
+func (r *SessionService) ListAutoPaging(ctx context.Context, params SessionListParams, opts ...RequestOption) *CursorPageAutoPager[SessionListSession] {
 	page, err := r.List(ctx, params, opts...)
 	return NewCursorPageAutoPager(page, err)
 }
@@ -239,9 +239,9 @@ type SessionServiceFiles struct {
 }
 
 // List files
-func (r *SessionServiceFiles) List(ctx context.Context, sessionID string, opts ...RequestOption) (*Fileslist, error) {
+func (r *SessionServiceFiles) List(ctx context.Context, sessionID string, opts ...RequestOption) (*FileList, error) {
 	path := fmt.Sprintf("/v1/sessions/%s/files", url.PathEscape(sessionID))
-	var out Fileslist
+	var out FileList
 	if err := r.client.do(ctx, "GET", path, nil, &out, opts...); err != nil {
 		return nil, err
 	}
@@ -673,19 +673,19 @@ func (r sessionJSON) RawJSON() string {
 	return r.raw
 }
 
-// Sessionslist Response containing a list of browser sessions with pagination details.
-type Sessionslist struct {
+// SessionList Response containing a list of browser sessions with pagination details.
+type SessionList struct {
 	// Cursor for the next page of results. Null if no more pages.
 	NextCursor string `json:"nextCursor" api:"required"`
 	// List of browser sessions
-	Sessions []SessionslistSession `json:"sessions" api:"required"`
+	Sessions []SessionListSession `json:"sessions" api:"required"`
 	// Total number of sessions matching the query. Only included for filtered queries (e.g. status=live).
-	TotalCount int64            `json:"totalCount"`
-	JSON       sessionslistJSON `json:"-"`
+	TotalCount int64           `json:"totalCount"`
+	JSON       sessionListJSON `json:"-"`
 }
 
-// sessionslistJSON contains the JSON metadata for the struct [Sessionslist]
-type sessionslistJSON struct {
+// sessionListJSON contains the JSON metadata for the struct [SessionList]
+type sessionListJSON struct {
 	NextCursor  apijson.Field
 	Sessions    apijson.Field
 	TotalCount  apijson.Field
@@ -693,11 +693,11 @@ type sessionslistJSON struct {
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *Sessionslist) UnmarshalJSON(data []byte) (err error) {
+func (r *SessionList) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sessionslistJSON) RawJSON() string {
+func (r sessionListJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -760,7 +760,7 @@ type SessionFileUploadParams struct {
 }
 
 type ComputerActionRequestMoveMouse struct {
-	Action param.Field[ComputerActionRequestVariant0Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestMoveMouseAction] `json:"action" api:"required"`
 	// X and Y coordinates [x, y]
 	Coordinates param.Field[[]float64] `json:"coordinates" api:"required"`
 	// Keys to hold while moving
@@ -774,11 +774,11 @@ func (r ComputerActionRequestMoveMouse) MarshalJSON() (data []byte, err error) {
 }
 
 type ComputerActionRequestClickMouse struct {
-	Action param.Field[ComputerActionRequestVariant1Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestClickMouseAction] `json:"action" api:"required"`
 	// Mouse button to click. Defaults to 'left'
-	Button param.Field[ComputerActionRequestVariant1Button] `json:"button"`
+	Button param.Field[ComputerActionRequestClickMouseButton] `json:"button"`
 	// Type of click (down, up, or click). Defaults to 'click'
-	ClickType param.Field[ComputerActionRequestVariant1ClickType] `json:"click_type"`
+	ClickType param.Field[ComputerActionRequestClickMouseClickType] `json:"click_type"`
 	// X and Y coordinates [x, y]
 	Coordinates param.Field[[]float64] `json:"coordinates"`
 	// Keys to hold while clicking
@@ -794,7 +794,7 @@ func (r ComputerActionRequestClickMouse) MarshalJSON() (data []byte, err error) 
 }
 
 type ComputerActionRequestDragMouse struct {
-	Action param.Field[ComputerActionRequestVariant2Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestDragMouseAction] `json:"action" api:"required"`
 	// Keys to hold while dragging
 	HoldKeys param.Field[[]string] `json:"hold_keys"`
 	// Array of [x, y] coordinate pairs
@@ -808,7 +808,7 @@ func (r ComputerActionRequestDragMouse) MarshalJSON() (data []byte, err error) {
 }
 
 type ComputerActionRequestScroll struct {
-	Action param.Field[ComputerActionRequestVariant3Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestScrollAction] `json:"action" api:"required"`
 	// X and Y coordinates [x, y]
 	Coordinates param.Field[[]float64] `json:"coordinates"`
 	// Horizontal scroll amount. Defaults to 0
@@ -826,7 +826,7 @@ func (r ComputerActionRequestScroll) MarshalJSON() (data []byte, err error) {
 }
 
 type ComputerActionRequestPressKey struct {
-	Action param.Field[ComputerActionRequestVariant4Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestPressKeyAction] `json:"action" api:"required"`
 	// Duration to hold keys in seconds
 	Duration param.Field[float64] `json:"duration"`
 	// Keys to press
@@ -840,7 +840,7 @@ func (r ComputerActionRequestPressKey) MarshalJSON() (data []byte, err error) {
 }
 
 type ComputerActionRequestTypeText struct {
-	Action param.Field[ComputerActionRequestVariant5Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestTypeTextAction] `json:"action" api:"required"`
 	// Keys to hold while typing
 	HoldKeys param.Field[[]string] `json:"hold_keys"`
 	// Whether to take a screenshot after the action
@@ -854,7 +854,7 @@ func (r ComputerActionRequestTypeText) MarshalJSON() (data []byte, err error) {
 }
 
 type ComputerActionRequestWait struct {
-	Action param.Field[ComputerActionRequestVariant6Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestWaitAction] `json:"action" api:"required"`
 	// Duration to wait in seconds
 	Duration param.Field[float64] `json:"duration" api:"required"`
 	// Whether to take a screenshot after the action
@@ -866,7 +866,7 @@ func (r ComputerActionRequestWait) MarshalJSON() (data []byte, err error) {
 }
 
 type ComputerActionRequestTakeScreenshot struct {
-	Action param.Field[ComputerActionRequestVariant7Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestTakeScreenshotAction] `json:"action" api:"required"`
 }
 
 func (r ComputerActionRequestTakeScreenshot) MarshalJSON() (data []byte, err error) {
@@ -874,7 +874,7 @@ func (r ComputerActionRequestTakeScreenshot) MarshalJSON() (data []byte, err err
 }
 
 type ComputerActionRequestGetCursorPosition struct {
-	Action param.Field[ComputerActionRequestVariant8Action] `json:"action" api:"required"`
+	Action param.Field[ComputerActionRequestGetCursorPositionAction] `json:"action" api:"required"`
 }
 
 func (r ComputerActionRequestGetCursorPosition) MarshalJSON() (data []byte, err error) {
@@ -1575,89 +1575,89 @@ func (r sessionStealthConfigJSON) RawJSON() string {
 	return r.raw
 }
 
-// SessionslistSessionDebugConfig Configuration for the debug URL and session viewer. Controls interaction capabilities and cursor visibility.
-type SessionslistSessionDebugConfig struct {
+// SessionListSessionDebugConfig Configuration for the debug URL and session viewer. Controls interaction capabilities and cursor visibility.
+type SessionListSessionDebugConfig struct {
 	// Whether interaction is allowed via the debug URL viewer. When false, the session viewer is view-only.
 	Interactive bool `json:"interactive"`
 	// Whether the OS-level mouse cursor is shown in the WebRTC stream (headful mode only).
-	SystemCursor bool                               `json:"systemCursor"`
-	JSON         sessionslistSessionDebugConfigJSON `json:"-"`
+	SystemCursor bool                              `json:"systemCursor"`
+	JSON         sessionListSessionDebugConfigJSON `json:"-"`
 }
 
-// sessionslistSessionDebugConfigJSON contains the JSON metadata for the struct [SessionslistSessionDebugConfig]
-type sessionslistSessionDebugConfigJSON struct {
+// sessionListSessionDebugConfigJSON contains the JSON metadata for the struct [SessionListSessionDebugConfig]
+type sessionListSessionDebugConfigJSON struct {
 	Interactive  apijson.Field
 	SystemCursor apijson.Field
 	raw          string
 	ExtraFields  map[string]apijson.Field
 }
 
-func (r *SessionslistSessionDebugConfig) UnmarshalJSON(data []byte) (err error) {
+func (r *SessionListSessionDebugConfig) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sessionslistSessionDebugConfigJSON) RawJSON() string {
+func (r sessionListSessionDebugConfigJSON) RawJSON() string {
 	return r.raw
 }
 
-// SessionslistSessionDeviceConfig Device configuration for the session
-type SessionslistSessionDeviceConfig struct {
+// SessionListSessionDeviceConfig Device configuration for the session
+type SessionListSessionDeviceConfig struct {
 	Device CreateSessionRequestDeviceConfigDevice `json:"device"`
-	JSON   sessionslistSessionDeviceConfigJSON    `json:"-"`
+	JSON   sessionListSessionDeviceConfigJSON     `json:"-"`
 }
 
-// sessionslistSessionDeviceConfigJSON contains the JSON metadata for the struct [SessionslistSessionDeviceConfig]
-type sessionslistSessionDeviceConfigJSON struct {
+// sessionListSessionDeviceConfigJSON contains the JSON metadata for the struct [SessionListSessionDeviceConfig]
+type sessionListSessionDeviceConfigJSON struct {
 	Device      apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *SessionslistSessionDeviceConfig) UnmarshalJSON(data []byte) (err error) {
+func (r *SessionListSessionDeviceConfig) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sessionslistSessionDeviceConfigJSON) RawJSON() string {
+func (r sessionListSessionDeviceConfigJSON) RawJSON() string {
 	return r.raw
 }
 
-// SessionslistSessionDimensions Viewport and browser window dimensions for the session
-type SessionslistSessionDimensions struct {
+// SessionListSessionDimensions Viewport and browser window dimensions for the session
+type SessionListSessionDimensions struct {
 	// Height of the browser window
 	Height int64 `json:"height" api:"required"`
 	// Width of the browser window
-	Width int64                             `json:"width" api:"required"`
-	JSON  sessionslistSessionDimensionsJSON `json:"-"`
+	Width int64                            `json:"width" api:"required"`
+	JSON  sessionListSessionDimensionsJSON `json:"-"`
 }
 
-// sessionslistSessionDimensionsJSON contains the JSON metadata for the struct [SessionslistSessionDimensions]
-type sessionslistSessionDimensionsJSON struct {
+// sessionListSessionDimensionsJSON contains the JSON metadata for the struct [SessionListSessionDimensions]
+type sessionListSessionDimensionsJSON struct {
 	Height      apijson.Field
 	Width       apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *SessionslistSessionDimensions) UnmarshalJSON(data []byte) (err error) {
+func (r *SessionListSessionDimensions) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sessionslistSessionDimensionsJSON) RawJSON() string {
+func (r sessionListSessionDimensionsJSON) RawJSON() string {
 	return r.raw
 }
 
-// SessionslistSessionOptimizeBandwidth Bandwidth optimizations that were applied to the session.
-type SessionslistSessionOptimizeBandwidth struct {
-	BlockHosts       []string                                 `json:"blockHosts"`
-	BlockImages      bool                                     `json:"blockImages"`
-	BlockMedia       bool                                     `json:"blockMedia"`
-	BlockStylesheets bool                                     `json:"blockStylesheets"`
-	BlockURLPatterns []string                                 `json:"blockUrlPatterns"`
-	JSON             sessionslistSessionOptimizeBandwidthJSON `json:"-"`
+// SessionListSessionOptimizeBandwidth Bandwidth optimizations that were applied to the session.
+type SessionListSessionOptimizeBandwidth struct {
+	BlockHosts       []string                                `json:"blockHosts"`
+	BlockImages      bool                                    `json:"blockImages"`
+	BlockMedia       bool                                    `json:"blockMedia"`
+	BlockStylesheets bool                                    `json:"blockStylesheets"`
+	BlockURLPatterns []string                                `json:"blockUrlPatterns"`
+	JSON             sessionListSessionOptimizeBandwidthJSON `json:"-"`
 }
 
-// sessionslistSessionOptimizeBandwidthJSON contains the JSON metadata for the struct [SessionslistSessionOptimizeBandwidth]
-type sessionslistSessionOptimizeBandwidthJSON struct {
+// sessionListSessionOptimizeBandwidthJSON contains the JSON metadata for the struct [SessionListSessionOptimizeBandwidth]
+type sessionListSessionOptimizeBandwidthJSON struct {
 	BlockHosts       apijson.Field
 	BlockImages      apijson.Field
 	BlockMedia       apijson.Field
@@ -1667,27 +1667,27 @@ type sessionslistSessionOptimizeBandwidthJSON struct {
 	ExtraFields      map[string]apijson.Field
 }
 
-func (r *SessionslistSessionOptimizeBandwidth) UnmarshalJSON(data []byte) (err error) {
+func (r *SessionListSessionOptimizeBandwidth) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sessionslistSessionOptimizeBandwidthJSON) RawJSON() string {
+func (r sessionListSessionOptimizeBandwidthJSON) RawJSON() string {
 	return r.raw
 }
 
-// SessionslistSessionStealthConfig Stealth configuration for the session
-type SessionslistSessionStealthConfig struct {
+// SessionListSessionStealthConfig Stealth configuration for the session
+type SessionListSessionStealthConfig struct {
 	// When true, captchas will be automatically solved when detected. When false, use the solve endpoints to manually initiate solving.
 	AutoCaptchaSolving bool `json:"autoCaptchaSolving"`
 	// This flag will make the browser act more human-like by moving the mouse in a more natural way
 	HumanizeInteractions bool `json:"humanizeInteractions"`
 	// This flag will skip the fingerprint generation for the session.
-	SkipFingerprintInjection bool                                 `json:"skipFingerprintInjection"`
-	JSON                     sessionslistSessionStealthConfigJSON `json:"-"`
+	SkipFingerprintInjection bool                                `json:"skipFingerprintInjection"`
+	JSON                     sessionListSessionStealthConfigJSON `json:"-"`
 }
 
-// sessionslistSessionStealthConfigJSON contains the JSON metadata for the struct [SessionslistSessionStealthConfig]
-type sessionslistSessionStealthConfigJSON struct {
+// sessionListSessionStealthConfigJSON contains the JSON metadata for the struct [SessionListSessionStealthConfig]
+type sessionListSessionStealthConfigJSON struct {
 	AutoCaptchaSolving       apijson.Field
 	HumanizeInteractions     apijson.Field
 	SkipFingerprintInjection apijson.Field
@@ -1695,28 +1695,28 @@ type sessionslistSessionStealthConfigJSON struct {
 	ExtraFields              map[string]apijson.Field
 }
 
-func (r *SessionslistSessionStealthConfig) UnmarshalJSON(data []byte) (err error) {
+func (r *SessionListSessionStealthConfig) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sessionslistSessionStealthConfigJSON) RawJSON() string {
+func (r sessionListSessionStealthConfigJSON) RawJSON() string {
 	return r.raw
 }
 
-// SessionslistSession List of browser sessions
-type SessionslistSession struct {
+// SessionListSession List of browser sessions
+type SessionListSession struct {
 	// Timestamp when the session started
 	CreatedAt time.Time `json:"createdAt" api:"required"`
 	// Amount of credits consumed by the session
 	CreditsUsed int64 `json:"creditsUsed" api:"required"`
 	// Configuration for the debug URL and session viewer. Controls interaction capabilities and cursor visibility.
-	DebugConfig SessionslistSessionDebugConfig `json:"debugConfig"`
+	DebugConfig SessionListSessionDebugConfig `json:"debugConfig"`
 	// URL for debugging the session
 	DebugURL string `json:"debugUrl" api:"required"`
 	// Device configuration for the session
-	DeviceConfig SessionslistSessionDeviceConfig `json:"deviceConfig"`
+	DeviceConfig SessionListSessionDeviceConfig `json:"deviceConfig"`
 	// Viewport and browser window dimensions for the session
-	Dimensions SessionslistSessionDimensions `json:"dimensions" api:"required"`
+	Dimensions SessionListSessionDimensions `json:"dimensions" api:"required"`
 	// Duration of the session in milliseconds
 	Duration int64 `json:"duration" api:"required"`
 	// Number of events processed in the session
@@ -1732,7 +1732,7 @@ type SessionslistSession struct {
 	// Indicates if Selenium is used in the session
 	IsSelenium bool `json:"isSelenium"`
 	// Bandwidth optimizations that were applied to the session.
-	OptimizeBandwidth SessionslistSessionOptimizeBandwidth `json:"optimizeBandwidth" api:"required"`
+	OptimizeBandwidth SessionListSessionOptimizeBandwidth `json:"optimizeBandwidth" api:"required"`
 	// This flag will persist the profile for the session.
 	PersistProfile bool `json:"persistProfile"`
 	// The ID of the profile associated with the session
@@ -1754,18 +1754,18 @@ type SessionslistSession struct {
 	// Status of the session
 	Status SessionResponseStatus `json:"status" api:"required"`
 	// Stealth configuration for the session
-	StealthConfig SessionslistSessionStealthConfig `json:"stealthConfig"`
+	StealthConfig SessionListSessionStealthConfig `json:"stealthConfig"`
 	// Session timeout duration in milliseconds
 	Timeout int64 `json:"timeout" api:"required"`
 	// User agent string used in the session
 	UserAgent string `json:"userAgent"`
 	// URL for the session's WebSocket connection
-	WebsocketURL string                  `json:"websocketUrl" api:"required"`
-	JSON         sessionslistSessionJSON `json:"-"`
+	WebsocketURL string                 `json:"websocketUrl" api:"required"`
+	JSON         sessionListSessionJSON `json:"-"`
 }
 
-// sessionslistSessionJSON contains the JSON metadata for the struct [SessionslistSession]
-type sessionslistSessionJSON struct {
+// sessionListSessionJSON contains the JSON metadata for the struct [SessionListSession]
+type sessionListSessionJSON struct {
 	CreatedAt         apijson.Field
 	CreditsUsed       apijson.Field
 	DebugConfig       apijson.Field
@@ -1798,11 +1798,11 @@ type sessionslistSessionJSON struct {
 	ExtraFields       map[string]apijson.Field
 }
 
-func (r *SessionslistSession) UnmarshalJSON(data []byte) (err error) {
+func (r *SessionListSession) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sessionslistSessionJSON) RawJSON() string {
+func (r sessionListSessionJSON) RawJSON() string {
 	return r.raw
 }
 
