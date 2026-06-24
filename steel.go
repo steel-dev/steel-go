@@ -572,11 +572,19 @@ type FileUpload struct {
 	Name        string
 	Content     []byte
 	ContentType string
+	URL         string
+}
+
+func FileFromURL(url string) FileUpload {
+	return FileUpload{URL: url}
 }
 
 var mpQuoteEscaper = strings.NewReplacer("\\", "\\\\", "\"", "\\\"")
 
 func writeFilePart(w *multipart.Writer, name string, file FileUpload) error {
+	if file.URL != "" {
+		return w.WriteField(name, file.URL)
+	}
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, mpQuoteEscaper.Replace(name), mpQuoteEscaper.Replace(file.Name)))
 	contentType := file.ContentType

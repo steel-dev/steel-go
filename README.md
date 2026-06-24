@@ -35,6 +35,15 @@ func main() {
 }
 ```
 
+Request fields are wrapped in `param.Field[T]` so the client can distinguish an unset field from a zero value. Build params with the `steel.F` helper (or the typed shortcuts `steel.String`, `steel.Int`, `steel.Bool`), and `steel.Null[T]()` to send an explicit JSON `null`:
+
+```go
+params := steel.SomeParams{
+	Name:    steel.F("value"),
+	Enabled: steel.F(true),
+}
+```
+
 Authentication uses API key (`steel-api-key`). The client reads the key from the `STEEL_API_KEY` environment variable when one is not passed explicitly.
 
 ## Pagination
