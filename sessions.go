@@ -1102,11 +1102,11 @@ func (r SessionCreateParamsStealthConfig) MarshalJSON() (data []byte, err error)
 // SessionCreateParamsUseProxyGeolocationGeolocation Geographic location for the proxy
 type SessionCreateParamsUseProxyGeolocationGeolocation struct {
 	// City name (e.g., 'NEW_YORK', 'LOS_ANGELES')
-	City param.Field[CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationCity] `json:"city"`
+	City param.Field[CreateSessionRequestUseProxyGeolocationCity] `json:"city"`
 	// Country code (e.g., 'US', 'GB', 'DE') - ISO 3166-1 alpha-2
-	Country param.Field[CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationCountry] `json:"country" api:"required"`
+	Country param.Field[CreateSessionRequestUseProxyGeolocationCountry] `json:"country" api:"required"`
 	// State code (e.g., 'NY', 'CA') - US states only
-	State param.Field[CreateSessionRequestUseProxyVariant0Variant1Variant0GeolocationState] `json:"state"`
+	State param.Field[CreateSessionRequestUseProxyGeolocationState] `json:"state"`
 }
 
 func (r SessionCreateParamsUseProxyGeolocationGeolocation) MarshalJSON() (data []byte, err error) {
