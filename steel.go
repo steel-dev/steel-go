@@ -176,7 +176,7 @@ func newClient(apiKey, baseURL string, opts []Option) *Client {
 	c := &Client{
 		apiKey:        apiKey,
 		baseURL:       baseURL,
-		httpClient:    &http.Client{Timeout: 60 * time.Second},
+		httpClient:    &http.Client{},
 		maxRetries:    2,
 		defaultHeader: http.Header{},
 		defaultQuery:  url.Values{},
@@ -188,11 +188,6 @@ func newClient(apiKey, baseURL string, opts []Option) *Client {
 	c.Sessions = &SessionService{client: c, Captchas: &SessionServiceCaptchas{client: c}, Files: &SessionServiceFiles{client: c}}
 	for _, opt := range opts {
 		opt(c)
-	}
-	if c.timeout != nil {
-		client := *c.httpClient
-		client.Timeout = *c.timeout
-		c.httpClient = &client
 	}
 	return c
 }
@@ -437,9 +432,19 @@ func setRuntimeHeaders(req *http.Request, idempotencyKey string) {
 
 func (c *Client) do(ctx context.Context, method, path string, body, out interface{}, opts ...RequestOption) error {
 	cfg := c.newRequestConfig(opts)
+	timeout := time.Duration(0)
+	if _, ok := ctx.Deadline(); !ok {
+		timeout = 60 * time.Second
+	}
+	if c.timeout != nil {
+		timeout = *c.timeout
+	}
 	if cfg.timeout != nil {
+		timeout = *cfg.timeout
+	}
+	if timeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, *cfg.timeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 	maxRetries := cfg.retries(c.maxRetries)
@@ -509,9 +514,19 @@ func (c *Client) do(ctx context.Context, method, path string, body, out interfac
 
 func (c *Client) doRawStream(ctx context.Context, method, path string, body interface{}, opts ...RequestOption) (io.ReadCloser, error) {
 	cfg := c.newRequestConfig(opts)
+	timeout := time.Duration(0)
+	if _, ok := ctx.Deadline(); !ok {
+		timeout = 60 * time.Second
+	}
+	if c.timeout != nil {
+		timeout = *c.timeout
+	}
 	if cfg.timeout != nil {
+		timeout = *cfg.timeout
+	}
+	if timeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, *cfg.timeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 	maxRetries := cfg.retries(c.maxRetries)
@@ -694,9 +709,19 @@ func buildMultipart(body interface{}) (*bytes.Buffer, string, error) {
 
 func (c *Client) doMultipart(ctx context.Context, method, path string, body, out interface{}, opts ...RequestOption) error {
 	cfg := c.newRequestConfig(opts)
+	timeout := time.Duration(0)
+	if _, ok := ctx.Deadline(); !ok {
+		timeout = 60 * time.Second
+	}
+	if c.timeout != nil {
+		timeout = *c.timeout
+	}
 	if cfg.timeout != nil {
+		timeout = *cfg.timeout
+	}
+	if timeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, *cfg.timeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 	maxRetries := cfg.retries(c.maxRetries)
