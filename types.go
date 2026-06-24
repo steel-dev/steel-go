@@ -1971,7 +1971,7 @@ type SessionReleaseParams map[string]interface{}
 // SessionCreateParamsOptimizeBandwidth Enable bandwidth optimizations. Passing true enables all flags (except hosts/patterns). Object allows granular control.
 type SessionCreateParamsOptimizeBandwidth = SessionCreateParamsOptimizeBandwidth2
 
-type SessionCreateParamsUseProxy interface{}
+type SessionCreateParamsUseProxy = SessionCreateParamsUseProxy2
 
 type SessionComputerParams struct {
 	Action                                 string                                  `json:"action"`
@@ -2057,6 +2057,29 @@ func (u SessionCreateParamsOptimizeBandwidth2) MarshalJSON() ([]byte, error) {
 	}
 	if u.OfSessionCreateParamsOptimizeBandwidthUnionMember1 != nil {
 		return json.Marshal(u.OfSessionCreateParamsOptimizeBandwidthUnionMember1)
+	}
+	return []byte("null"), nil
+}
+
+type SessionCreateParamsUseProxy2 struct {
+	OfBool                                   *bool                                   `json:"-"`
+	OfSessionCreateParamsUseProxyGeolocation *SessionCreateParamsUseProxyGeolocation `json:"-"`
+	OfSessionCreateParamsUseProxyServer      *SessionCreateParamsUseProxyServer      `json:"-"`
+	OfAny                                    *interface{}                            `json:"-"`
+}
+
+func (u SessionCreateParamsUseProxy2) MarshalJSON() ([]byte, error) {
+	if u.OfBool != nil {
+		return json.Marshal(u.OfBool)
+	}
+	if u.OfSessionCreateParamsUseProxyGeolocation != nil {
+		return json.Marshal(u.OfSessionCreateParamsUseProxyGeolocation)
+	}
+	if u.OfSessionCreateParamsUseProxyServer != nil {
+		return json.Marshal(u.OfSessionCreateParamsUseProxyServer)
+	}
+	if u.OfAny != nil {
+		return json.Marshal(u.OfAny)
 	}
 	return []byte("null"), nil
 }
