@@ -1,3 +1,4 @@
+// Deprecated: use github.com/steel-dev/sdk/go instead.
 module github.com/steel-dev/steel-go
 
 go 1.21
